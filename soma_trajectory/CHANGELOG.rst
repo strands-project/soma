@@ -2,8 +2,8 @@
 Changelog for package soma_trajectory
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.0.1 (2016-02-03)
+------------------
 * replacing the collection name "people_trajectories" with "people_trajectory"
 * make soma_trajectory.py able to listen online, delete the store data to people_trajectories
 * delete swp file

@@ -2,8 +2,8 @@
 Changelog for package soma_geospatial_store
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.0.1 (2016-02-03)
+------------------
 * Added function to fetch rois for a given object.
 * removed call to geospatial store in novelty client.
 * Added Area of ROI helper function from msg store
