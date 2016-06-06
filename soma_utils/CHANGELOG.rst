@@ -2,6 +2,9 @@
 Changelog for package soma_utils
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 0.0.1 (2016-02-03)
 ------------------
 * add type info for list option

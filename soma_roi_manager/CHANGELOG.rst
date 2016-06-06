@@ -2,6 +2,9 @@
 Changelog for package soma_roi_manager
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 0.0.1 (2016-02-03)
 ------------------
 * Fixed args so they work in a launch file.

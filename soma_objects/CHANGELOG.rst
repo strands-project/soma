@@ -2,6 +2,9 @@
 Changelog for package soma_objects
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 0.0.1 (2016-02-03)
 ------------------
 * added g4s objects into soma_manager rviz list
