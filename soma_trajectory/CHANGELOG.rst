@@ -2,6 +2,9 @@
 Changelog for package soma2_trajectory
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 1.0.1 (2016-06-06)
 ------------------
 
