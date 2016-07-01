@@ -1,6 +1,6 @@
 Header header
 
-string id  		#### id of the object that is inserted. Useful for identifying objects. SOMA2 delete service use this id to delete objects from DB.
+string id  		#### id of the object that is inserted. Useful for object instances such as cup1, chair2, etc. SOMA2 delete service use this id to delete objects from DB.
 
 string map_name 	#### the global map that the object belongs. Automatically filled by SOMA2 insert service 
 
@@ -10,7 +10,7 @@ string config 		#### the corresponding world configuration. This could be increm
 
 string mesh 		#### mesh model of the object. Could be left blank
 
-string type 		#### type of the object. For higher level objects, this could chair1, chair2. For middle or lower level segments it could be segment1101, segment1102, etc.
+string type 		#### type of the object. For higher level objects, this could chair, cup, etc. 
 
 string waypoint 	#### the waypoint id. Could be left blank
 
