@@ -29,6 +29,8 @@ from soma2_msgs.msg import SOMA2ROIObject
 from soma2_msgs.msg import SOMA2OccupancyMap
 from bson.objectid import ObjectId
 
+from datetime import datetime
+
 def trapezoidal_shaped_func(a, b, c, d, x):
     min_val = min(min((x - a)/(b - a), float(1.0)), (d - x)/(d - c))
     return max(min_val, float(0.0))
@@ -75,7 +77,7 @@ def b_func(x):
     return value
 
 ## TODO: Add functionality for reading the latest state of ROI with a particular ID
-## Add the timestamp information to ROI msg 
+## Add the timestamp information to ROI msg
 
 
 class SOMAROIManager():
@@ -184,8 +186,10 @@ class SOMAROIManager():
         pose.position.x +=0.5
         pose.position.y +=0.5
 
-        self.add_object(self.menu_item[feedback.menu_entry_id], pose)
+        self.add_roi(self.menu_item[feedback.menu_entry_id], pose)
         latest_soma_roi = self._soma_obj_msg[str(self._soma_id)]
+        """
+
         #print self._soma_obj_msg
 
         pose2 = Pose()
@@ -201,7 +205,7 @@ class SOMAROIManager():
         pose3.position.y = pose2.position.y + 0.5
 
         self.add_object(latest_soma_roi.type,pose3,int(latest_soma_roi.id))
-
+        """
         self.draw_roi(latest_soma_roi)
 
     # Delete a roi callback
@@ -292,11 +296,18 @@ class SOMAROIManager():
 
         self.draw_roi(self._soma_obj_msg[roi])
 
-        if hasattr(self, "vp_timer_"+feedback.marker_name):
-            getattr(self, "vp_timer_"+feedback.marker_name).cancel()
-        setattr(self, "vp_timer_"+feedback.marker_name,
-                Timer(3, self.update_object, [feedback]))
-        getattr(self, "vp_timer_"+feedback.marker_name).start()
+    #    if hasattr(self, "vp_timer_"+feedback.marker_name):
+    #        getattr(self, "vp_timer_"+feedback.marker_name).cancel()
+    #    setattr(self, "vp_timer_"+feedback.marker_name,
+    #            Timer(3, self.update_object, [feedback]))
+    #    getattr(self, "vp_timer_"+feedback.marker_name).start()
+
+
+        if hasattr(self, "vp_timer_"+roi):
+            getattr(self, "vp_timer_"+roi).cancel()
+        setattr(self, "vp_timer_"+roi,
+                Timer(5, self.update_object, [roi]))
+        getattr(self, "vp_timer_"+roi).start()
 
     def _enable_cb(self, feedback):
 
@@ -344,30 +355,13 @@ class SOMAROIManager():
 
         # if collection is empty insert initial object
         if not objs:
+
             pose = Pose()
             pose.position.x = 0
             pose.position.y = 0
 
-            self.add_object('Office', pose)
-
-            pose = Pose()
-
-            pose.position.x = 0.5
-            pose.position.y = 0.5
-            ######################################################
-
-            # Add object
-            self.add_object('Office', pose, 1 )
-
-            pose = Pose()
-
-            pose.position.x = 1
-            pose.position.y = 1
-
-            ######################################################
-
-            # Add object
-            self.add_object('Office', pose, 1 )
+    #        self.add_object('Office', pose)
+            self.add_roi('Office',pose)
 
             # Draw the ROI
             self.draw_roi(self._soma_obj_msg['1'])
@@ -409,8 +403,6 @@ class SOMAROIManager():
 
         pointkeys.sort(key=int)
 
-        #print pointkeys
-        #p = self._soma_obj_pose[v[0]].values()
         for akey in pointkeys:
             sortedposes.append(posesdict[akey])
 
@@ -461,18 +453,11 @@ class SOMAROIManager():
 
         self._server.applyChanges()
 
-
-
-
-    #soma_type = Office, Kitchen, etc, Pose is position
-    def add_object(self, soma_type, pose, soma_id=None):
-        # todo: add to mongodb
+    def add_roi(self, soma_type, anchor_pose, soma_id=None):
 
         #create a SOMA2ROI Object
         soma_obj = SOMA2ROIObject()
-
         print soma_id
-
         # a new roi
         if soma_id == None:
 
@@ -480,6 +465,7 @@ class SOMAROIManager():
             soma_id = self._next_id()
             self._soma_id = soma_id
             soma_obj.id = str(soma_id)
+            print soma_obj.id
 
             soma_obj.map_name = str(self.soma_map_name)
             soma_obj.map_unique_id = str(self.map_unique_id)
@@ -487,60 +473,84 @@ class SOMAROIManager():
             soma_obj.config = str(self.soma_conf)
 
             soma_obj.type = soma_type
-            soma_obj.posearray.poses.append(pose)
+            soma_obj.posearray.poses.append(anchor_pose)
             soma_obj.header.frame_id = '/map'
             soma_obj.header.stamp = rospy.get_rostime()
+            self.insert_soma_time_fields(soma_obj)
+
+            #print dt.day, dt.hour, dt.minute
             #self._soma_obj_roi_ids[str(soma_roi_id)] = list()
             self._soma_obj_markers[soma_obj.id] = dict()
             self._soma_obj_pose[soma_obj.id] = dict()
-            #_id = self._msg_store.update_id
+
+            self._soma_obj_pose[soma_obj.id][str(1)] = anchor_pose
+
+            self.load_object(str(soma_id),soma_type,anchor_pose)
+
+            for i in range(2,4):
+                p = Pose()
+                p.position.x = anchor_pose.position.x + 0.5*i
+                p.position.y = anchor_pose.position.y + 0.5*i
+                self.load_object(str(soma_id),soma_type,p)
+                self._soma_obj_pose[soma_obj.id][str(i)] = p
+                soma_obj.posearray.poses.append(p)
+
             _id = self._msg_store.insert(soma_obj)
+
             self._soma_obj_ids[soma_obj.id] = _id
-            #self._soma_obj_roi_ids[soma_obj.roi_id].append(soma_obj.id)
+
             self._soma_obj_type[soma_obj.id] = soma_type
-            #self._soma_obj_roi[soma_obj.id] = roi_id
+
             self._soma_obj_msg[soma_obj.id] = soma_obj
-            #self._soma_obj_pose[soma_obj.id] = soma_obj.posearray.poses
-            self._soma_obj_pose[soma_obj.id][str(1)] = pose
-        else:
-            # Get the roi id
-            soma_id = soma_id
-            #print roi_id," ",self.soma_map," ",self.soma_conf," ",self._soma_obj_ids['1']
-
-            #call the object with that id
-            res = self._msg_store.query(SOMA2ROIObject._type,message_query={'id':str(soma_id)})
-
-            #iterate through the objects. Normally there should be only 1 object returned
-            for o,om in res:
-                soma_obj = o
-            if soma_obj:
-
-                soma_id = soma_obj.id
-
-                self.load_object(str(soma_id), soma_type, pose)
-
-                soma_obj.posearray.poses = self.sort_marker_positions(self._soma_obj_pose[soma_obj.id])
-
-                if len(soma_obj.posearray.poses) >=3:
-                    self.insert_geo_json(soma_obj)
-
-                _id = self._soma_obj_ids[soma_obj.id]
-
-                try:
-                    _newid =  self._msg_store.update_id(_id,soma_obj)
-                    rospy.loginfo("ROI Store: updated roi (%s %s)" % (soma_obj.type, soma_obj.id) )
-
-                except:
-                    soma_obj.geotype = ''
-                    soma_obj.geoposearray = []
-                    rospy.logerr("The polygon of %s %s is malformed (self-intersecting) => Please update geometry." % (soma_obj.type, soma_obj.id))
-
-                self._soma_obj_msg[soma_obj.id] = soma_obj
-
-                return
 
 
-        self.load_object(str(soma_id), soma_type, pose)
+
+    #soma_type = Office, Kitchen, etc, Pose is position
+    def add_object(self, soma_type, pose, soma_id=None):
+
+
+        #create a SOMA2ROI Object
+        soma_obj = SOMA2ROIObject()
+
+        # Get the roi id
+        soma_id = soma_id
+        #print roi_id," ",self.soma_map," ",self.soma_conf," ",self._soma_obj_ids['1']
+
+        #call the object with that id
+        res = self._msg_store.query(SOMA2ROIObject._type,message_query={'id':str(soma_id)})
+
+        #iterate through the objects. Normally there should be only 1 object returned
+        for o,om in res:
+            soma_obj = o
+
+        if soma_obj:
+            soma_id = soma_obj.id
+            self.load_object(str(soma_id), soma_type, pose)
+            soma_obj.posearray.poses = self.sort_marker_positions(self._soma_obj_pose[soma_obj.id])
+            # if we have at least 3 vertices add geojson part and a new object
+            if len(soma_obj.posearray.poses) >=3:
+                self.insert_geo_json(soma_obj)
+                #_id = self._soma_obj_ids[soma_obj.id]
+            self.insert_soma_time_fields(soma_obj)
+            try:
+                #_newid =  self._msg_store.update_id(_id,soma_obj)
+                _id = self._msg_store.insert(soma_obj)
+
+                self._soma_obj_ids[soma_obj.id] = _id
+
+                rospy.loginfo("ROI Store: updated roi (%s %s)" % (soma_obj.type, soma_obj.id) )
+
+            except:
+                soma_obj.geotype = ''
+                soma_obj.geoposearray = []
+                rospy.logerr("The polygon of %s %s is malformed (self-intersecting) => Please update geometry." % (soma_obj.type, soma_obj.id))
+
+            self._soma_obj_msg[soma_obj.id] = soma_obj
+
+            return
+
+
+        #self.load_object(str(soma_id), soma_type, pose)
 
 
 
@@ -595,6 +605,29 @@ class SOMAROIManager():
                            'coordinates': coordinates}
         return geo_json
 
+    def insert_soma_time_fields(self,soma_obj,timestamp=None):
+
+        if timestamp == None:
+
+            #convert to uint32
+            soma_obj.logtimestamp = int(rospy.get_rostime().to_sec()) & 0xffffffff
+
+            dt = datetime.utcfromtimestamp(soma_obj.logtimestamp)
+            soma_obj.loghour = int(dt.hour)
+            soma_obj.logminute = int(dt.minute)
+            soma_obj.logday = int(dt.weekday())
+            soma_obj.logtimeminutes = int(dt.hour)*60 + int(dt.minute)
+        else:
+            #convert to uint32
+            soma_obj.logtimestamp = timestamp & 0xffffffff
+
+            dt = datetime.utcfromtimestamp(soma_obj.logtimestamp)
+            soma_obj.loghour = int(dt.hour)
+            soma_obj.logminute = int(dt.minute)
+            soma_obj.logday = int(dt.weekday())
+            soma_obj.logtimeminutes = int(dt.hour)*60 + int(dt.minute)
+
+
     def delete_object(self, soma_id, marker_name, should_delete_roi):
         # todo: delete from mongodb
 
@@ -603,7 +636,12 @@ class SOMAROIManager():
 
         if(should_delete_roi):
             try:
-                self._msg_store.delete(str(_id))
+                # Get all the history object with 'id'
+                res = self._msg_store.query(SOMA2ROIObject._type,message_query={'id':str(soma_id)})
+                #iterate through the objects. Delete all the history
+                for o,om in res:
+                    soma_obj = o
+                    self._msg_store.delete(str(om["_id"]))
             except:
                 rospy.logerr("Error deleting ROI %s." % (str(soma_id)) )
                 return
@@ -624,12 +662,13 @@ class SOMAROIManager():
 
         new_msg.posearray.poses = self.sort_marker_positions(self._soma_obj_pose[str(soma_id)])
 
-
         self.insert_geo_json(new_msg)
 
-
         try:
-            self._msg_store.update_id(_id,new_msg)
+            #self._msg_store.update_id(_id,new_msg)
+            _id = self._msg_store.insert(new_msg)
+
+            self._soma_obj_ids[new_msg.id] = _id
         except:
             rospy.logerr("Error deleting Marker %s." % (marker_name) )
             return
@@ -640,24 +679,27 @@ class SOMAROIManager():
         self._server.applyChanges()
 
 
-    def update_object(self, feedback):
-        rospy.loginfo("Updated marker: %s", feedback.marker_name)
-        roi_and_index = feedback.marker_name.split('_')
+    def update_object(self, roi):
+        rospy.loginfo("Updated roi: %s", roi)
+        #roi_and_index = feedback.marker_name.split('_')
         #print self._soma_obj_ids
         #print roi_and_index
-        _id = self._soma_obj_ids[roi_and_index[0]]
-        msg = self._soma_obj_msg[roi_and_index[0]]
+        _id = self._soma_obj_ids[roi]
+        msg = self._soma_obj_msg[roi]
 
         new_msg = copy.deepcopy(msg)
 
-        roi = roi_and_index[0]
+        #roi = roi_and_index[0]
 
         new_msg.posearray.poses = self.sort_marker_positions(self._soma_obj_pose[roi])
 
         self.insert_geo_json(new_msg)
-
+        self.insert_soma_time_fields(new_msg)
         try:
-            self._msg_store.update_id(_id, new_msg)
+            #self._msg_store.update_id(_id, new_msg)
+            _id = self._msg_store.insert(new_msg)
+
+            self._soma_obj_ids[new_msg.id] = _id
             rospy.loginfo("ROI %s updated successfully" %(roi))
         except:
             rospy.logerr("Error updating ROI %s" %(roi))

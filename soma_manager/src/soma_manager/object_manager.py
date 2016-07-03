@@ -121,7 +121,7 @@ class SOMAManager():
             print "Service call failed: %s"%e
             return None
 
-    # Checks the soma2 inser service information from soma2 data_manager
+    # Checks the soma2 insert service information from soma2 data_manager
     def _check_soma2_insertservice(self):
         print "Waiting for soma2 insert service..."
         try:
