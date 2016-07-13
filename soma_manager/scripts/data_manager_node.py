@@ -9,8 +9,6 @@ from soma_manager.data_manager import SOMADataManager
 if __name__=="__main__":
 
     parser = argparse.ArgumentParser(prog='data_manager_node.py')
-    #parser.add_argument("map", nargs=1, help='Path of the used 2D map')
-    #parser.add_argument("map_name",nargs=1, help='Name of the used 2D map')
     parser.add_argument("db_name", nargs='?', help='Name of the database')
     parser.add_argument('collection_name', nargs='?', help='Name of the collection')
 
@@ -22,8 +20,8 @@ if __name__=="__main__":
            rospy.loginfo("Running SOMA data manager (dbname: %s, collection_name: %s)", args.db_name, args.collection_name)
            SOMADataManager(args.db_name,args.collection_name)
         else:
-            rospy.loginfo("Running SOMA data manager (dbname: %s, collection_name: soma2)", args.db_name)
+            rospy.loginfo("Running SOMA data manager (dbname: %s, collection_name: object)", args.db_name)
             SOMADataManager(args.db_name)
     else:
-        rospy.loginfo("Running SOMA data manager (dbname: soma2data, collection_name: soma2)")
+        rospy.loginfo("Running SOMA data manager (dbname: somadata, collection_name: object)")
         SOMADataManager()

@@ -50,7 +50,7 @@ add_message_files(
    FILES
    SOMA2Object.msg
    SOMA2ROIObject.msg
-   SOMA2OccupancyMap.msg
+   SOMAOccupancyMap.msg
 )
 
 ## Generate services in the 'srv' folder

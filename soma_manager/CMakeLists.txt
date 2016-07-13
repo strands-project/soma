@@ -60,10 +60,10 @@ catkin_python_setup()
 ## Generate services in the 'srv' folder
 add_service_files(
   FILES
-  SOMA2InsertObjs.srv
-  SOMA2DeleteObjs.srv
-  SOMA2UpdateObject.srv
-  SOMA2QueryObjs.srv
+  SOMAInsertObjs.srv
+  SOMADeleteObjs.srv
+  SOMAUpdateObject.srv
+  SOMAQueryObjs.srv
 #   Service2.srv
 )
 

@@ -1,7 +1,7 @@
 #include <ros/ros.h>
 #include <mongodb_store/message_store.h>
 #include "querybuilder.h"
-#include <soma_manager/SOMA2QueryObjs.h>
+#include <soma_manager/SOMAQueryObjs.h>
 #include <soma_map_manager/MapInfo.h>
 #include <QCollator>
 #include <QDir>
@@ -9,12 +9,12 @@
 #include <QDebug>
 #include <QString>
 
-std::string objectsdbname="soma2data";
-std::string roidbname="soma2data";
-std::string objectscollectionname="soma2";
+std::string objectsdbname="somadata";
+std::string roidbname="somadata";
+std::string objectscollectionname="soma";
 std::string map_name="kthfloor6";
 
-struct SOMA2TimeLimits{
+struct SOMATimeLimits{
 
     int maxtimestep;
     int mintimestep;
@@ -30,7 +30,7 @@ std::vector<soma2_msgs::SOMA2ROIObject> fetchSOMA2ROIs()
 
     ros::NodeHandle nl;
 
-    mongodb_store::MessageStoreProxy soma2store(nl,"soma2_roi",roidbname);
+    mongodb_store::MessageStoreProxy soma2store(nl,"soma_roi",roidbname);
 
     mongo::BSONObjBuilder builder;
 
@@ -183,11 +183,11 @@ std::vector<std::vector<std::string> > fetchSOMA2ObjectTypesIDs()
     return result;
 
 }
-SOMA2TimeLimits getSOMA2CollectionMinMaxTimestep()
+SOMATimeLimits getSOMA2CollectionMinMaxTimestep()
 {
 
 
-    SOMA2TimeLimits limits;
+    SOMATimeLimits limits;
     limits.mintimestamp = -1;
     limits.mintimestep = -1;
     limits.maxtimestamp = -1;
@@ -203,7 +203,7 @@ SOMA2TimeLimits getSOMA2CollectionMinMaxTimestep()
 
     std::vector<boost::shared_ptr<soma2_msgs::SOMA2Object> > soma2objects;
 
-    soma2store.query(soma2objects,mongo::BSONObj(),mongo::BSONObj(),builder.obj(),false,1);
+    soma2store.query(soma2objects,mongo::BSONObj(),mongo::BSONObj(),builder.obj(),mongo::BSONObj(),false,1);
 
     if(soma2objects.size() > 0){
         limits.maxtimestep = soma2objects[0]->timestep;
@@ -212,7 +212,7 @@ SOMA2TimeLimits getSOMA2CollectionMinMaxTimestep()
     //std::cout<<soma2objects[0]->timestep<<std::endl;
 
     soma2objects.clear();
-    soma2store.query(soma2objects,mongo::BSONObj(),mongo::BSONObj(),mongo::BSONObj(),false,1);
+    soma2store.query(soma2objects,mongo::BSONObj(),mongo::BSONObj(),mongo::BSONObj(),mongo::BSONObj(),false,1);
 
     if(soma2objects.size() > 0)
     {
@@ -262,11 +262,11 @@ std::vector<soma2_msgs::SOMA2Object> querySOMA2Objects(const mongo::BSONObj &que
 }
 
 
-bool handleQueryRequests(soma_manager::SOMA2QueryObjsRequest & req, soma_manager::SOMA2QueryObjsResponse& resp)
+bool handleQueryRequests(soma_manager::SOMAQueryObjsRequest & req, soma_manager::SOMAQueryObjsResponse& resp)
 {
     mongo::BSONObjBuilder mainbuilder;
 
-    // We are building a SOMA2Object Query
+    // We are building a SOMAObject Query
     if(req.query_type == 0)
     {
         // If dates are used
@@ -329,7 +329,7 @@ bool handleQueryRequests(soma_manager::SOMA2QueryObjsRequest & req, soma_manager
 
             ros::NodeHandle nl;
 
-            mongodb_store::MessageStoreProxy soma2store(nl,"soma2_roi",roidbname);
+            mongodb_store::MessageStoreProxy soma2store(nl,"roi",roidbname);
 
             mongo::BSONObjBuilder builder;
 
@@ -509,7 +509,7 @@ bool handleQueryRequests(soma_manager::SOMA2QueryObjsRequest & req, soma_manager
     // Handle Query for timelimits
     else if(req.query_type == 3)
     {
-        SOMA2TimeLimits res = getSOMA2CollectionMinMaxTimestep();
+        SOMATimeLimits res = getSOMA2CollectionMinMaxTimestep();
 
         resp.timedatelimits.push_back(res.mintimestep);
         resp.timedatelimits.push_back(res.maxtimestep);
@@ -540,7 +540,7 @@ int main(int argc, char **argv){
     {
 
         std::cout<<
-                    "Running the query_manager_node with default arguments: ObjectsDBName: soma2data, ObjectsCollectionName:soma2, ROIDBName:soma2data"
+                    "Running the query_manager_node with default arguments: ObjectsDBName: somadata, ObjectsCollectionName: object, ROICollectionName: roi"
                  <<std::endl;
         // std::cout << "Not enough input arguments!! Quitting..."<<std::endl;
 
@@ -565,7 +565,7 @@ int main(int argc, char **argv){
 
     }
 
-    ros::ServiceClient client = n.serviceClient<soma_map_manager::MapInfo>("soma2/map_info");
+    ros::ServiceClient client = n.serviceClient<soma_map_manager::MapInfo>("soma/map_info");
 
     ROS_INFO("Waiting for SOMA Map Service...");
 
@@ -581,8 +581,8 @@ int main(int argc, char **argv){
 
     map_name = srv.response.map_name;
 
-    ros::ServiceServer service = n.advertiseService("soma2/query_db", handleQueryRequests);
-    ROS_INFO("SOMA2 Query Service Ready.");
+    ros::ServiceServer service = n.advertiseService("soma/query_db", handleQueryRequests);
+    ROS_INFO("SOMA Query Service Ready.");
 
     ros::spin();
 
