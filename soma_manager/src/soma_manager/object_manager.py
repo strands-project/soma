@@ -17,7 +17,7 @@ from interactive_markers.interactive_marker_server import *
 from interactive_markers.menu_handler import *
 from geometry_msgs.msg import Pose
 
-from soma2_msgs.msg import SOMA2Object
+from soma_msgs.msg import SOMAObject
 from soma_manager.srv import *
 from soma_map_manager.srv import *
 from bson.objectid import ObjectId
@@ -86,10 +86,10 @@ class SOMAManager():
         self._msg_store=MessageStoreProxy(database="somadata", collection="object")
 
         #Debug purposes
-        #objs = self._msg_store.query(SOMA2Object._type, message_query={}, projection_query={"pose":0, "mesh":0},limit=2, sort_query=[("_id",-1)])
+        #objs = self._msg_store.query(SOMAObject._type, message_query={}, projection_query={"pose":0, "mesh":0},limit=2, sort_query=[("_id",-1)])
         #print objs
 
-         # Get the SOMA2 map name and unique id
+         # Get the SOMA map name and unique id
         resp = self._init_map()
         if resp == None:
             rospy.signal_shutdown("No map info provided...")
@@ -113,7 +113,7 @@ class SOMAManager():
 
         rospy.spin()
 
-    # Listens the map information from soma2 map_manager
+    # Listens the map information from soma map_manager
     def _init_map(self):
         print "Waiting for the map info from soma_map_manager..."
         try:
@@ -130,7 +130,7 @@ class SOMAManager():
             rospy.logerr("Service call failed: %s",e)
             return None
 
-    # Checks the soma2 insert service information from soma2 data_manager
+    # Checks the soma insert service information from soma data_manager
     def _check_soma_insertservice(self):
         print "Waiting for SOMA object insert service..."
         try:
@@ -219,7 +219,7 @@ class SOMAManager():
 
     def _retrieve_objects(self):
 
-        objs = self._msg_store.query(SOMA2Object._type, message_query={"map_name":self.soma_map,"config":self.soma_conf})
+        objs = self._msg_store.query(SOMAObject._type, message_query={"map_name":self.soma_map,"config":self.soma_conf})
 
         max_id = 0
         for o,om in objs:
@@ -278,7 +278,7 @@ class SOMAManager():
 
         soma_id = self._next_id()
 
-        soma_obj = SOMA2Object()
+        soma_obj = SOMAObject()
         soma_obj.id = str(soma_id)
         soma_obj.map_unique_id = str(self.map_unique_id)
         soma_obj.map_name = str(self.soma_map)

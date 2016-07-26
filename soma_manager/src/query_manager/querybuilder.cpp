@@ -5,7 +5,7 @@ QueryBuilder::QueryBuilder()
 
 
 }
-mongo::BSONObj QueryBuilder::buildSOMA2LabelContainsQuery(const std::string &text)
+mongo::BSONObj QueryBuilder::buildSOMALabelContainsQuery(const std::string &text)
 {
 
     mongo::BSONObjBuilder builder;
@@ -22,7 +22,7 @@ mongo::BSONObj QueryBuilder::buildSOMA2LabelContainsQuery(const std::string &tex
 
 
 }
-mongo::BSONObj QueryBuilder::buildSOMA2DateQuery(unsigned long lowerdate, unsigned long upperdate, int mode)
+mongo::BSONObj QueryBuilder::buildSOMADateQuery(unsigned long lowerdate, unsigned long upperdate, int mode)
 {
     mongo::BSONObjBuilder builder;
 
@@ -73,7 +73,7 @@ mongo::BSONObj QueryBuilder::buildSOMA2DateQuery(unsigned long lowerdate, unsign
 
 }
 
-mongo::BSONObj QueryBuilder::buildSOMA2TimestepQuery(int timestep)
+mongo::BSONObj QueryBuilder::buildSOMATimestepQuery(int timestep)
 {
     mongo::BSONObjBuilder builder;
 
@@ -83,7 +83,7 @@ mongo::BSONObj QueryBuilder::buildSOMA2TimestepQuery(int timestep)
 
 }
 
-/*mongo::BSONObj QueryBuilder::buildSOMA2TypeEqualsQuery(const std::vector<std::string>& typelist)
+/*mongo::BSONObj QueryBuilder::buildSOMATypeEqualsQuery(const std::vector<std::string>& typelist)
 {
 
 
@@ -107,7 +107,7 @@ mongo::BSONObj QueryBuilder::buildSOMA2TimestepQuery(int timestep)
     return builder.obj();
 
 }*/
-mongo::BSONObj QueryBuilder::buildSOMA2StringArrayBasedQuery(const std::vector<std::string> &list, std::vector<std::string> fieldnames, std::vector<int> objectIndexes, std::string arrayOperator)
+mongo::BSONObj QueryBuilder::buildSOMAStringArrayBasedQuery(const std::vector<std::string> &list, std::vector<std::string> fieldnames, std::vector<int> objectIndexes, std::string arrayOperator)
 {
 
     std::vector<int> realIndexes;
@@ -138,7 +138,7 @@ mongo::BSONObj QueryBuilder::buildSOMA2StringArrayBasedQuery(const std::vector<s
 
 
 }
-mongo::BSONObj QueryBuilder::buildSOMA2TimeQuery(int lowerhour,int lowerminute, int upperhour, int upperminute,  int mode)
+mongo::BSONObj QueryBuilder::buildSOMATimeQuery(int lowerhour,int lowerminute, int upperhour, int upperminute,  int mode)
 {
     mongo::BSONObjBuilder builder;
 
@@ -206,7 +206,7 @@ mongo::BSONObj QueryBuilder::buildSOMA2TimeQuery(int lowerhour,int lowerminute, 
     return builder.obj();
 
 }
-mongo::BSONObj QueryBuilder::buildSOMA2WeekdayQuery(int index)
+mongo::BSONObj QueryBuilder::buildSOMAWeekdayQuery(int index)
 {
     // std::stringstream ss;
     //ss<<index;
@@ -220,7 +220,7 @@ mongo::BSONObj QueryBuilder::buildSOMA2WeekdayQuery(int index)
 
 }
 
-mongo::BSONObj QueryBuilder::buildSOMA2ROIWithinQuery(const soma2_msgs::SOMA2ROIObject &roiobj)
+mongo::BSONObj QueryBuilder::buildSOMAROIWithinQuery(const soma_msgs::SOMAROIObject &roiobj)
 {
 
     mongo::BSONArrayBuilder b;

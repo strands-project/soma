@@ -19,8 +19,7 @@ from geometry_msgs.msg import PoseArray
 from nav_msgs.msg import OccupancyGrid
 from nav_msgs.srv import GetMap
 
-from soma2_msgs.msg import SOMA2ROIObject
-from soma2_msgs.msg import SOMAOccupancyMap
+from soma_msgs.msg import SOMAOccupancyMap
 from bson.objectid import ObjectId
 
 from soma_map_manager.srv import *

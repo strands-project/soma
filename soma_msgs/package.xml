@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <package>
-  <name>soma2_msgs</name>
+  <name>soma_msgs</name>
   <version>1.0.4</version>
   <description>The soma2_msgs package</description>
 

@@ -44,8 +44,8 @@ string[] types             ### vector of object types present in current collect
 
 string[] ids		   ### vector of object ids present in current collection
 
-soma2_msgs/SOMA2Object[] objects  ### vector of returned objects
+soma_msgs/SOMAObject[] objects  ### vector of returned objects
 
-soma2_msgs/SOMA2ROIObject[] rois  ### vector of returned rois
+soma_msgs/SOMAROIObject[] rois  ### vector of returned rois
 
 string queryjson 	   ### performed query in json format

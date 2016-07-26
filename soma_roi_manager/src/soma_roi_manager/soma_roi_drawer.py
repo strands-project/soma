@@ -20,8 +20,8 @@ from geometry_msgs.msg import PoseArray
 
 from soma_roi_manager.srv import *
 
-from soma2_msgs.msg import SOMA2ROIObject
-from soma2_msgs.msg import SOMA2OccupancyMap
+from soma_msgs.msg import SOMAROIObject
+from soma_msgs.msg import SOMAOccupancyMap
 from bson.objectid import ObjectId
 
 def trapezoidal_shaped_func(a, b, c, d, x):
@@ -79,9 +79,9 @@ class SOMAROIDrawer():
 
        # self._interactive = True
 
-        self._msg_store=MessageStoreProxy(database="soma2data",collection="soma2_roi")
+        self._msg_store=MessageStoreProxy(database="somadata",collection="roi")
 
-        s = rospy.Service('soma2/draw_roi', DrawROI, self.handle_draw_roi)
+        s = rospy.Service('soma/draw_roi', DrawROI, self.handle_draw_roi)
 
        # Publisher vis_pub = node_handle.advertise<visualization_msgs::Marker>( "visualization_marker", 0 );
         self.markerpub = rospy.Publisher("visualization_marker_array", MarkerArray, queue_size=1)
@@ -112,7 +112,7 @@ class SOMAROIDrawer():
 
     def _retrieve_objects(self, map_name, roi_id):
 
-        objs = self._msg_store.query(SOMA2ROIObject._type, message_query={"map_name": map_name,
+        objs = self._msg_store.query(SOMAROIObject._type, message_query={"map_name": map_name,
                                                                       "roi_id": roi_id})
         #print objs
         max_id = 0
@@ -196,8 +196,8 @@ class SOMAROIDrawer():
     def add_object(self, soma_type, pose, roi_id=None):
         # todo: add to mongodb
 
-        #create a SOMA2ROI Object
-        soma_obj = SOMA2ROIObject()
+        #create a SOMAROI Object
+        soma_obj = SOMAROIObject()
 
        # print roi_id
 
@@ -238,7 +238,7 @@ class SOMAROIDrawer():
             #print roi_id," ",self.soma_map," ",self.soma_conf," ",self._soma_obj_ids['1']
 
             #call the object with that id
-            res = self._msg_store.query(SOMA2ROIObject._type,message_query={'id':str(roi_id)})
+            res = self._msg_store.query(SOMAROIObject._type,message_query={'id':str(roi_id)})
 
             #iterate through the objects. Normally there should be only 1 object returned
             for o,om in res:

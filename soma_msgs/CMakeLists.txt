@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(soma2_msgs)
+project(soma_msgs)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
@@ -48,8 +48,8 @@ find_package(catkin REQUIRED COMPONENTS
 ## Generate messages in the 'msg' folder
 add_message_files(
    FILES
-   SOMA2Object.msg
-   SOMA2ROIObject.msg
+   SOMAObject.msg
+   SOMAROIObject.msg
    SOMAOccupancyMap.msg
 )
 
@@ -84,7 +84,7 @@ generate_messages(
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
 #  INCLUDE_DIRS include
-#  LIBRARIES soma2_msgs
+#  LIBRARIES soma_msgs
 #  CATKIN_DEPENDS geometry_msgs message_generation std_msgs
 #  DEPENDS system_lib
 )

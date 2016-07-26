@@ -16,7 +16,7 @@ from geometry_msgs.msg import Pose
 from geometry_msgs.msg import PoseArray
 from threading import Timer
 from mongodb_store.message_store import MessageStoreProxy
-from soma2_msgs.msg import SOMA2ROIObject, SOMA2Object
+from soma_msgs.msg import SOMAROIObject, SOMAObject
 from soma_manager.srv import *
 from soma_map_manager.srv import *
 from std_msgs.msg import String
@@ -123,7 +123,7 @@ class SOMADataManager():
     def handle_delete_request(self,req):
 
         for oid in req.ids:
-            res = self._message_store.query(SOMA2Object._type,message_query={"id": oid})
+            res = self._message_store.query(SOMAObject._type,message_query={"id": oid})
             #print len(res)
             for o,om in res:
                 try:

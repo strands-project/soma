@@ -25,8 +25,8 @@ from nav_msgs.srv import GetMap
 
 from soma_map_manager.srv import *
 
-from soma2_msgs.msg import SOMA2ROIObject
-from soma2_msgs.msg import SOMA2OccupancyMap
+from soma_msgs.msg import SOMAROIObject
+from soma_msgs.msg import SOMAOccupancyMap
 from bson.objectid import ObjectId
 
 from datetime import datetime
@@ -103,9 +103,9 @@ class SOMAROIManager():
 
         self._interactive = True
 
-        self._msg_store=MessageStoreProxy(database="soma2data", collection="soma2_roi")
+        self._msg_store=MessageStoreProxy(database="somadata", collection="roi")
 
-        self._server = InteractiveMarkerServer("soma2_roi")
+        self._server = InteractiveMarkerServer("soma_roi")
 
         self._init_types()
 
@@ -123,15 +123,15 @@ class SOMAROIManager():
         rospy.spin()
     # Initialize map
     def _init_map(self):
-        print "Waiting for the map info from soma2_map_manager"
+        print "Waiting for the map info from soma_map_manager"
         try:
-            rospy.wait_for_service('soma2/map_info')
+            rospy.wait_for_service('soma/map_info')
             #print "Map info received..."
         except:
            # print("No 'static_map' service")
             return None
         try:
-           map_info = rospy.ServiceProxy('soma2/map_info',MapInfo)
+           map_info = rospy.ServiceProxy('soma/map_info',MapInfo)
            resp1 = map_info(0)
            return resp1
         except rospy.ServiceException, e:
@@ -309,7 +309,7 @@ class SOMAROIManager():
     # Retrieve the objects from DB
     def _retrieve_objects(self):
 
-        objs = self._msg_store.query(SOMA2ROIObject._type, message_query={"map_name": self.soma_map_name})
+        objs = self._msg_store.query(SOMAROIObject._type, message_query={"map_name": self.soma_map_name})
 
         max_id = 0
 
@@ -428,8 +428,8 @@ class SOMAROIManager():
 
     def add_roi(self, soma_type, anchor_pose, soma_id=None):
 
-        #create a SOMA2ROI Object
-        soma_obj = SOMA2ROIObject()
+        #create a SOMAROI Object
+        soma_obj = SOMAROIObject()
         print soma_id
         # a new roi
         if soma_id == None:
@@ -482,11 +482,11 @@ class SOMAROIManager():
     def add_object(self, soma_type, pose, soma_id=None):
 
 
-        #create a SOMA2ROI Object
-        soma_obj = SOMA2ROIObject()
+        #create a SOMAROI Object
+        soma_obj = SOMAROIObject()
 
         #call the object with that id
-        res = self._msg_store.query(SOMA2ROIObject._type,message_query={'id':str(soma_id)})
+        res = self._msg_store.query(SOMAROIObject._type,message_query={'id':str(soma_id)})
 
         #iterate through the objects. Normally there should be only 1 object returned
         for o,om in res:
@@ -604,7 +604,7 @@ class SOMAROIManager():
         if(should_delete_roi):
             try:
                 # Get all the history object with 'id'
-                res = self._msg_store.query(SOMA2ROIObject._type,message_query={'id':str(soma_id)})
+                res = self._msg_store.query(SOMAROIObject._type,message_query={'id':str(soma_id)})
                 #iterate through the objects. Delete all the history
                 for o,om in res:
                     soma_obj = o

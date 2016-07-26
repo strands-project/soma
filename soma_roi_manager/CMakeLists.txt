@@ -9,7 +9,7 @@ find_package(catkin REQUIRED COMPONENTS
   interactive_markers
   mongodb_store
   rospy
-  soma2_msgs
+  soma_msgs
   visualization_msgs
   nav_msgs
   std_msgs
@@ -86,7 +86,7 @@ catkin_python_setup()
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES soma_roi_manager
-#  CATKIN_DEPENDS geometry_msgs interactive_markers mongodb_store rospy soma2_msgs visualization_msgs
+#  CATKIN_DEPENDS geometry_msgs interactive_markers mongodb_store rospy soma_msgs visualization_msgs
 #  DEPENDS system_lib
 )
 

@@ -24,13 +24,13 @@ struct SOMATimeLimits{
 
 };
 
-std::vector<soma2_msgs::SOMA2ROIObject> fetchSOMA2ROIs()
+std::vector<soma_msgs::SOMAROIObject> fetchSOMAROIs()
 {
-    std::vector<soma2_msgs::SOMA2ROIObject> res;
+    std::vector<soma_msgs::SOMAROIObject> res;
 
     ros::NodeHandle nl;
 
-    mongodb_store::MessageStoreProxy soma2store(nl,"soma_roi",roidbname);
+    mongodb_store::MessageStoreProxy somastore(nl,"roi",roidbname);
 
     mongo::BSONObjBuilder builder;
 
@@ -43,10 +43,10 @@ std::vector<soma2_msgs::SOMA2ROIObject> fetchSOMA2ROIs()
     // builder.appendElements(mongo::fromjson(str.toStdString()));
 
 
-    std::vector<boost::shared_ptr<soma2_msgs::SOMA2ROIObject> > rois;
+    std::vector<boost::shared_ptr<soma_msgs::SOMAROIObject> > rois;
 
 
-    soma2store.query(rois,builder.obj());
+    somastore.query(rois,builder.obj());
 
     nl.shutdown();
 
@@ -62,23 +62,23 @@ std::vector<soma2_msgs::SOMA2ROIObject> fetchSOMA2ROIs()
     return res;
 }
 
-std::vector<std::vector<std::string> > fetchSOMA2ObjectTypesIDs()
+std::vector<std::vector<std::string> > fetchSOMAObjectTypesIDs()
 {
     ros::NodeHandle nl;
 
     std::vector< std::vector<std::string> > result;
 
-    mongodb_store::MessageStoreProxy soma2store(nl,objectscollectionname,objectsdbname);
+    mongodb_store::MessageStoreProxy somastore(nl,objectscollectionname,objectsdbname);
 
-    std::vector<boost::shared_ptr<soma2_msgs::SOMA2Object> >  soma2objects;
+    std::vector<boost::shared_ptr<soma_msgs::SOMAObject> >  somaobjects;
 
-    std::vector<std::string> soma2types;
+    std::vector<std::string> somatypes;
 
-    std::vector<std::string> soma2ids;
+    std::vector<std::string> somaids;
 
 
     // Query all objects,
-    soma2store.query(soma2objects);
+    somastore.query(somaobjects);
 
     // List that stores the object types
     QStringList typesls;
@@ -89,11 +89,11 @@ std::vector<std::vector<std::string> > fetchSOMA2ObjectTypesIDs()
     nl.shutdown();
 
     // If we have any objects
-    if(soma2objects.size()>0)
+    if(somaobjects.size()>0)
     {
 
 
-        for(int i = 0; i < soma2objects.size(); i++)
+        for(int i = 0; i < somaobjects.size(); i++)
         {
             QString str;
 
@@ -101,11 +101,11 @@ std::vector<std::vector<std::string> > fetchSOMA2ObjectTypesIDs()
 
 
 
-            //   spr = soma2objects[i];
+            //   spr = somaobjects[i];
 
-            str.append(QString::fromStdString(soma2objects[i]->type));
+            str.append(QString::fromStdString(somaobjects[i]->type));
 
-            str2.append(QString::fromStdString(soma2objects[i]->id));
+            str2.append(QString::fromStdString(somaobjects[i]->id));
 
 
             typesls.append(str);
@@ -114,13 +114,13 @@ std::vector<std::vector<std::string> > fetchSOMA2ObjectTypesIDs()
 
 
 
-            //std::cout<<soma22objects[i].use_count()<<std::endl;
+            //std::cout<<somaobjects[i].use_count()<<std::endl;
 
 
         }
     }
 
-    //  soma2objects.clear();
+    //  somaobjects.clear();
 
 
     // Remove duplicate names
@@ -136,9 +136,9 @@ std::vector<std::vector<std::string> > fetchSOMA2ObjectTypesIDs()
     std::sort(
                 typesls.begin(),
                 typesls.end(),
-                [&collator](const QString &file1, const QString &file2)
+                [&collator](const QString &file1, const QString &file)
     {
-        return collator.compare(file1, file2) < 0;
+        return collator.compare(file1, file) < 0;
     });
 
 
@@ -147,7 +147,7 @@ std::vector<std::vector<std::string> > fetchSOMA2ObjectTypesIDs()
     foreach(QString st, typesls)
     {
 
-        soma2types.push_back(st.toStdString());
+        somatypes.push_back(st.toStdString());
     }
 
 
@@ -161,9 +161,9 @@ std::vector<std::vector<std::string> > fetchSOMA2ObjectTypesIDs()
     std::sort(
                 idsls.begin(),
                 idsls.end(),
-                [&collator](const QString &file1, const QString &file2)
+                [&collator](const QString &file1, const QString &file)
     {
-        return collator.compare(file1, file2) < 0;
+        return collator.compare(file1, file) < 0;
     });
 
 
@@ -172,18 +172,18 @@ std::vector<std::vector<std::string> > fetchSOMA2ObjectTypesIDs()
 
     foreach(st, idsls)
     {
-        soma2ids.push_back(st.toStdString());
+        somaids.push_back(st.toStdString());
 
     }
 
 
-    result.push_back(soma2types);
-    result.push_back(soma2ids);
+    result.push_back(somatypes);
+    result.push_back(somaids);
 
     return result;
 
 }
-SOMATimeLimits getSOMA2CollectionMinMaxTimestep()
+SOMATimeLimits getSOMACollectionMinMaxTimestep()
 {
 
 
@@ -195,57 +195,63 @@ SOMATimeLimits getSOMA2CollectionMinMaxTimestep()
 
     ros::NodeHandle nl;
 
-    mongodb_store::MessageStoreProxy soma2store(nl,objectscollectionname,objectsdbname);
+    mongodb_store::MessageStoreProxy somastore(nl,objectscollectionname,objectsdbname);
 
     mongo::BSONObjBuilder builder;
 
     builder.append("$natural",-1);
 
-    std::vector<boost::shared_ptr<soma2_msgs::SOMA2Object> > soma2objects;
+    std::vector<boost::shared_ptr<soma_msgs::SOMAObject> > somaobjects;
 
-    soma2store.query(soma2objects,mongo::BSONObj(),mongo::BSONObj(),builder.obj(),mongo::BSONObj(),false,1);
+  //  somastore.query(somaobjects,mongo::BSONObj(),mongo::BSONObj(),builder.obj(),mongo::BSONObj(),false,1);
 
-    if(soma2objects.size() > 0){
-        limits.maxtimestep = soma2objects[0]->timestep;
-        limits.maxtimestamp = soma2objects[0]->logtimestamp;
+    somastore.query(somaobjects,mongo::BSONObj(),mongo::BSONObj(),builder.obj(),false,1);
+
+
+    if(somaobjects.size() > 0){
+        limits.maxtimestep = somaobjects[0]->timestep;
+        limits.maxtimestamp = somaobjects[0]->logtimestamp;
     }
-    //std::cout<<soma2objects[0]->timestep<<std::endl;
+    //std::cout<<somaobjects[0]->timestep<<std::endl;
 
-    soma2objects.clear();
-    soma2store.query(soma2objects,mongo::BSONObj(),mongo::BSONObj(),mongo::BSONObj(),mongo::BSONObj(),false,1);
+    somaobjects.clear();
+  //  somastore.query(somaobjects,mongo::BSONObj(),mongo::BSONObj(),mongo::BSONObj(),mongo::BSONObj(),false,1);
 
-    if(soma2objects.size() > 0)
+    somastore.query(somaobjects,mongo::BSONObj(),mongo::BSONObj(),mongo::BSONObj(),false,1);
+
+
+    if(somaobjects.size() > 0)
     {
 
-        limits.mintimestep = soma2objects[0]->timestep;
-        limits.mintimestamp = soma2objects[0]->logtimestamp;
+        limits.mintimestep = somaobjects[0]->timestep;
+        limits.mintimestamp = somaobjects[0]->logtimestamp;
     }
 
     return limits;
 
 }
-std::vector<soma2_msgs::SOMA2Object> querySOMA2Objects(const mongo::BSONObj &queryobj)
+std::vector<soma_msgs::SOMAObject> querySOMAObjects(const mongo::BSONObj &queryobj)
 {
 
     ros::NodeHandle nl;
 
-    mongodb_store::MessageStoreProxy soma2store(nl,objectscollectionname,objectsdbname);
+    mongodb_store::MessageStoreProxy somastore(nl,objectscollectionname,objectsdbname);
 
 
-    std::vector<soma2_msgs::SOMA2Object> res;
-
-
-
-    std::vector<boost::shared_ptr<soma2_msgs::SOMA2Object> > soma2objects;
+    std::vector<soma_msgs::SOMAObject> res;
 
 
 
-    soma2store.query(soma2objects,queryobj);
+    std::vector<boost::shared_ptr<soma_msgs::SOMAObject> > somaobjects;
 
 
-    if(soma2objects.size() > 0)
+
+    somastore.query(somaobjects,queryobj);
+
+
+    if(somaobjects.size() > 0)
     {
-        for(auto &labelled_object:soma2objects)
+        for(auto &labelled_object:somaobjects)
         {
             res.push_back(*labelled_object);
             //qDebug()<<labelled_object.use_count;
@@ -283,7 +289,7 @@ bool handleQueryRequests(soma_manager::SOMAQueryObjsRequest & req, soma_manager:
             else if(req.upperdate > 0)
                 mode = 1;
 
-            mongo::BSONObj bsonobj = QueryBuilder::buildSOMA2DateQuery(req.lowerdate,req.upperdate,mode);
+            mongo::BSONObj bsonobj = QueryBuilder::buildSOMADateQuery(req.lowerdate,req.upperdate,mode);
 
             mainbuilder.appendElements(bsonobj);
 
@@ -292,7 +298,7 @@ bool handleQueryRequests(soma_manager::SOMAQueryObjsRequest & req, soma_manager:
         else if(req.usetimestep)
         {
             qDebug()<<"I am here at timestep"<<req.timestep<<req.usetimestep;
-            mongo::BSONObj timestepobj = QueryBuilder::buildSOMA2TimestepQuery(req.timestep);
+            mongo::BSONObj timestepobj = QueryBuilder::buildSOMATimestepQuery(req.timestep);
 
             mainbuilder.appendElements(timestepobj);
 
@@ -304,11 +310,11 @@ bool handleQueryRequests(soma_manager::SOMAQueryObjsRequest & req, soma_manager:
 
             int mode = 0;
             if(req.uselowertime && req.useuppertime)
-                mode = 2;
+                mode =2 ;
             else if(req.useuppertime)
                 mode=1;
 
-            mongo::BSONObj bsonobj = QueryBuilder::buildSOMA2TimeQuery(req.lowerhour,req.lowerminutes,req.upperhour,req.upperminutes,mode);
+            mongo::BSONObj bsonobj = QueryBuilder::buildSOMATimeQuery(req.lowerhour,req.lowerminutes,req.upperhour,req.upperminutes,mode);
 
             mainbuilder.appendElements(bsonobj);
 
@@ -317,7 +323,7 @@ bool handleQueryRequests(soma_manager::SOMAQueryObjsRequest & req, soma_manager:
         // If weekday limit is used
         if(req.useweekday)
         {
-            mongo::BSONObj bsonobj = QueryBuilder::buildSOMA2WeekdayQuery(req.weekday);
+            mongo::BSONObj bsonobj = QueryBuilder::buildSOMAWeekdayQuery(req.weekday);
 
 
             mainbuilder.appendElements(bsonobj);
@@ -329,17 +335,17 @@ bool handleQueryRequests(soma_manager::SOMAQueryObjsRequest & req, soma_manager:
 
             ros::NodeHandle nl;
 
-            mongodb_store::MessageStoreProxy soma2store(nl,"roi",roidbname);
+            mongodb_store::MessageStoreProxy somastore(nl,"roi",roidbname);
 
             mongo::BSONObjBuilder builder;
 
             builder.append("map_name",map_name);
 
 
-            std::vector<boost::shared_ptr<soma2_msgs::SOMA2ROIObject> > rois;
+            std::vector<boost::shared_ptr<soma_msgs::SOMAROIObject> > rois;
 
 
-            soma2store.query(rois,builder.obj());
+            somastore.query(rois,builder.obj());
 
             nl.shutdown();
 
@@ -347,11 +353,11 @@ bool handleQueryRequests(soma_manager::SOMAQueryObjsRequest & req, soma_manager:
 
             for(int i  = 0;i < rois.size(); i++)
             {
-                soma2_msgs::SOMA2ROIObject roi = *rois[i];
+                soma_msgs::SOMAROIObject roi = *rois[i];
 
                 if(roi.id == req.roi_id)
                 {
-                    mongo::BSONObj bsonobj = QueryBuilder::buildSOMA2ROIWithinQuery(roi);
+                    mongo::BSONObj bsonobj = QueryBuilder::buildSOMAROIWithinQuery(roi);
 
                     mainbuilder.appendElements(bsonobj);
 
@@ -389,7 +395,7 @@ bool handleQueryRequests(soma_manager::SOMAQueryObjsRequest & req, soma_manager:
 
                     objectIndexes.push_back(req.objecttypes.size());
 
-                    mongo::BSONObj bsonobj = QueryBuilder::buildSOMA2StringArrayBasedQuery(list,fieldnames,objectIndexes,"$or");
+                    mongo::BSONObj bsonobj = QueryBuilder::buildSOMAStringArrayBasedQuery(list,fieldnames,objectIndexes,"$or");
 
                     mainbuilder.appendElements(bsonobj);
                 }
@@ -409,7 +415,7 @@ bool handleQueryRequests(soma_manager::SOMAQueryObjsRequest & req, soma_manager:
                     //   list.insert(list.end(),req.objectids.data()->begin(),req.objectids.data()->end());
 
 
-                    mongo::BSONObj bsonobj = QueryBuilder::buildSOMA2StringArrayBasedQuery(req.objectids,fieldnames,objectIndexes,"$or");
+                    mongo::BSONObj bsonobj = QueryBuilder::buildSOMAStringArrayBasedQuery(req.objectids,fieldnames,objectIndexes,"$or");
 
 
 
@@ -424,7 +430,7 @@ bool handleQueryRequests(soma_manager::SOMAQueryObjsRequest & req, soma_manager:
                     std::vector<int> objectIndexes;
                     objectIndexes.push_back(req.objecttypes.size());
 
-                    mongo::BSONObj bsonobj = QueryBuilder::buildSOMA2StringArrayBasedQuery(req.objecttypes,fieldnames,objectIndexes,"$or");
+                    mongo::BSONObj bsonobj = QueryBuilder::buildSOMAStringArrayBasedQuery(req.objecttypes,fieldnames,objectIndexes,"$or");
 
                     mainbuilder.appendElements(bsonobj);
 
@@ -444,7 +450,7 @@ bool handleQueryRequests(soma_manager::SOMAQueryObjsRequest & req, soma_manager:
                 //   list.insert(list.end(),req.objectids.data()->begin(),req.objectids.data()->end());
 
 
-                mongo::BSONObj bsonobj = QueryBuilder::buildSOMA2StringArrayBasedQuery(req.objectids,fieldnames,objectIndexes,"$or");
+                mongo::BSONObj bsonobj = QueryBuilder::buildSOMAStringArrayBasedQuery(req.objectids,fieldnames,objectIndexes,"$or");
 
 
 
@@ -459,7 +465,7 @@ bool handleQueryRequests(soma_manager::SOMAQueryObjsRequest & req, soma_manager:
                 std::vector<int> objectIndexes;
                 objectIndexes.push_back(req.objecttypes.size());
 
-                mongo::BSONObj bsonobj = QueryBuilder::buildSOMA2StringArrayBasedQuery(req.objecttypes,fieldnames,objectIndexes,"$or");
+                mongo::BSONObj bsonobj = QueryBuilder::buildSOMAStringArrayBasedQuery(req.objecttypes,fieldnames,objectIndexes,"$or");
 
                 mainbuilder.appendElements(bsonobj);
 
@@ -475,9 +481,9 @@ bool handleQueryRequests(soma_manager::SOMAQueryObjsRequest & req, soma_manager:
 
            // qDebug()<<QString::fromStdString(tempObject.jsonString());
 
-            std::vector< soma2_msgs::SOMA2Object > soma2objects =  querySOMA2Objects(tempObject);
+            std::vector< soma_msgs::SOMAObject > somaobjects =  querySOMAObjects(tempObject);
 
-            resp.objects = soma2objects;
+            resp.objects = somaobjects;
             resp.queryjson = tempObject.jsonString();
 
         }
@@ -490,8 +496,8 @@ bool handleQueryRequests(soma_manager::SOMAQueryObjsRequest & req, soma_manager:
     // Handle Query for type and ids
     else if(req.query_type == 1)
     {
-        std::vector<std::vector<std::string> > res = fetchSOMA2ObjectTypesIDs();
-        if(res.size()>=2)
+        std::vector<std::vector<std::string> > res = fetchSOMAObjectTypesIDs();
+        if(res.size()>= 2)
         {
             resp.types = res[0];
             resp.ids = res[1];
@@ -501,7 +507,7 @@ bool handleQueryRequests(soma_manager::SOMAQueryObjsRequest & req, soma_manager:
     // Handle Query for rois
     else if(req.query_type == 2)
     {
-        std::vector<soma2_msgs::SOMA2ROIObject> res = fetchSOMA2ROIs();
+        std::vector<soma_msgs::SOMAROIObject> res = fetchSOMAROIs();
 
         resp.rois = res;
 
@@ -509,7 +515,7 @@ bool handleQueryRequests(soma_manager::SOMAQueryObjsRequest & req, soma_manager:
     // Handle Query for timelimits
     else if(req.query_type == 3)
     {
-        SOMATimeLimits res = getSOMA2CollectionMinMaxTimestep();
+        SOMATimeLimits res = getSOMACollectionMinMaxTimestep();
 
         resp.timedatelimits.push_back(res.mintimestep);
         resp.timedatelimits.push_back(res.maxtimestep);
@@ -551,16 +557,16 @@ int main(int argc, char **argv){
     {
         if(argc > 1){
             objectsdbname = argv[1];
-            //mw.rosthread.setSOMA2ObjectsDBName(objectsdbname);
+            //mw.rosthread.setSOMAObjectsDBName(objectsdbname);
 
         }
-        if(argc >2){
+        if(argc > 2){
             objectscollectionname = argv[2];
-            // mw.rosthread.setSOMA2ObjectsCollectionName(objectscollectionname);
+            // mw.rosthread.setSOMAObjectsCollectionName(objectscollectionname);
         }
         if(argc >3){
             roidb = argv[3];
-            //mw.rosthread.setSOMA2ROIDBName(roidb);
+            //mw.rosthread.setSOMAROIDBName(roidb);
         }
 
     }
@@ -588,7 +594,7 @@ int main(int argc, char **argv){
 
     /*ros::NodeHandle n;
 
-    mongodb_store::MessageStoreProxy soma2store(n,this->objectscollectionname,this->objectsdbname);*/
+    mongodb_store::MessageStoreProxy somastore(n,this->objectscollectionname,this->objectsdbname);*/
 
     //RosThread thread();
 
@@ -598,4 +604,3 @@ int main(int argc, char **argv){
 
 
 }
-
