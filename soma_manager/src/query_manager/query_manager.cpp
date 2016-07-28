@@ -203,9 +203,9 @@ SOMATimeLimits getSOMACollectionMinMaxTimestep()
 
     std::vector<boost::shared_ptr<soma_msgs::SOMAObject> > somaobjects;
 
-  //  somastore.query(somaobjects,mongo::BSONObj(),mongo::BSONObj(),builder.obj(),mongo::BSONObj(),false,1);
+    somastore.query(somaobjects,mongo::BSONObj(),mongo::BSONObj(),builder.obj(),mongo::BSONObj(),false,1);
 
-    somastore.query(somaobjects,mongo::BSONObj(),mongo::BSONObj(),builder.obj(),false,1);
+  //  somastore.query(somaobjects,mongo::BSONObj(),mongo::BSONObj(),builder.obj(),false,1); // old version
 
 
     if(somaobjects.size() > 0){
@@ -215,9 +215,10 @@ SOMATimeLimits getSOMACollectionMinMaxTimestep()
     //std::cout<<somaobjects[0]->timestep<<std::endl;
 
     somaobjects.clear();
-  //  somastore.query(somaobjects,mongo::BSONObj(),mongo::BSONObj(),mongo::BSONObj(),mongo::BSONObj(),false,1);
 
-    somastore.query(somaobjects,mongo::BSONObj(),mongo::BSONObj(),mongo::BSONObj(),false,1);
+    somastore.query(somaobjects,mongo::BSONObj(),mongo::BSONObj(),mongo::BSONObj(),mongo::BSONObj(),false,1);
+
+ //   somastore.query(somaobjects,mongo::BSONObj(),mongo::BSONObj(),mongo::BSONObj(),false,1);
 
 
     if(somaobjects.size() > 0)
