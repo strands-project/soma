@@ -81,8 +81,6 @@ class SOMAROIManager():
 
     def __init__(self, soma_conf, config_file=None):
 
-        #self.soma_map = soma_map
-        #self.soma_map_name = soma_map_name
         self.map_unique_id = -1
         self.soma_conf = soma_conf
         if config_file:
@@ -95,7 +93,6 @@ class SOMAROIManager():
             self._config_file=path+filename
         self._soma_obj_ids = dict()
         self._soma_obj_msg = dict()
-        #self._soma_obj_roi_ids = dict()
         self._soma_obj_soma_ids = dict()
         self._soma_obj_type = dict()
         self._soma_obj_pose = dict()
@@ -309,18 +306,38 @@ class SOMAROIManager():
     # Retrieve the objects from DB
     def _retrieve_objects(self):
 
-        objs = self._msg_store.query(SOMAROIObject._type, message_query={"map_name": self.soma_map_name})
+        objs = self._msg_store.query(SOMAROIObject._type, message_query={"map_name": self.soma_map_name, "config":self.soma_conf})
 
         max_id = 0
 
+        ids = []
+
         for o,om in objs:
+            ''' Store ids '''
+            ids.append(o.id)
+
             if int(o.id) > max_id:
                 max_id = int(o.id)
 
         self._soma_id = max_id
+        ''' Get the unique ids '''
+        myset = set(ids)
 
+        uniqueids = list(myset)
+        '''********************'''
+        returnedobjs = []
+        returnedmetas = []
 
-        return objs
+        ''' Get the latest state of each roi  '''
+        for i in uniqueids:
+            objs = self._msg_store.query(SOMAROIObject._type, message_query={"map_name": self.soma_map_name, "config":self.soma_conf, "id":i},sort_query=[("logtimestamp",-1)])
+            
+            if objs:
+                returnedobjs.append(objs[0][0])
+                returnedmetas.append(objs[0][1])
+
+        ''' Return latest states '''
+        return zip(returnedobjs,returnedmetas)
 
     def load_objects(self):
 
@@ -430,7 +447,7 @@ class SOMAROIManager():
 
         #create a SOMAROI Object
         soma_obj = SOMAROIObject()
-        print soma_id
+        #print soma_id
         # a new roi
         if soma_id == None:
 
@@ -438,7 +455,7 @@ class SOMAROIManager():
             soma_id = self._next_id()
             self._soma_id = soma_id
             soma_obj.id = str(soma_id)
-            print soma_obj.id
+           # print soma_obj.id
 
             soma_obj.map_name = str(self.soma_map_name)
             soma_obj.map_unique_id = str(self.map_unique_id)
@@ -449,7 +466,8 @@ class SOMAROIManager():
             soma_obj.posearray.poses.append(anchor_pose)
             soma_obj.header.frame_id = '/map'
             soma_obj.header.stamp = rospy.get_rostime()
-            self.insert_soma_time_fields(soma_obj)
+
+	    self.insert_soma_time_fields(soma_obj)
 
             #print dt.day, dt.hour, dt.minute
             #self._soma_obj_roi_ids[str(soma_roi_id)] = list()
@@ -486,11 +504,13 @@ class SOMAROIManager():
         soma_obj = SOMAROIObject()
 
         #call the object with that id
-        res = self._msg_store.query(SOMAROIObject._type,message_query={'id':str(soma_id)})
+        res = self._msg_store.query(SOMAROIObject._type,message_query={'id':str(soma_id)},sort_query=[("logtimestamp",-1)])
 
-        #iterate through the objects. Normally there should be only 1 object returned
+        #iterate through the objects.
         for o,om in res:
+	    print o
             soma_obj = o
+	    break
 
         if soma_obj:
 

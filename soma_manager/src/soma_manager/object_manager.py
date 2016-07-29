@@ -86,7 +86,7 @@ class SOMAManager():
         self._msg_store=MessageStoreProxy(database="somadata", collection="object")
 
         #Debug purposes
-        objs = self._msg_store.query(SOMAObject._type, message_query={}, projection_query={"pose":0, "mesh":0},limit=2, sort_query=[("_id",-1)])
+        #objs = self._msg_store.query(SOMAObject._type, message_query={}, projection_query={"pose":0, "mesh":0},limit=2, sort_query=[("_id",-1)])
 	#objs = self._msg_store.query(SOMAObject._type, message_query={})
         print objs
 
