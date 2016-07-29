@@ -261,7 +261,7 @@ std::vector<soma_msgs::SOMAObject> querySOMAObjects(const mongo::BSONObj &queryo
     }
 
 
-    qDebug()<<"Query returned"<<res.size()<<"objects";
+    ROS_INFO("Query returned %d objects",res.size());
 
     return res;
 
@@ -298,7 +298,7 @@ bool handleQueryRequests(soma_manager::SOMAQueryObjsRequest & req, soma_manager:
         // If timestep is used instead
         else if(req.usetimestep)
         {
-            qDebug()<<"I am here at timestep"<<req.timestep<<req.usetimestep;
+           // qDebug()<<"I am here at timestep"<<req.timestep<<req.usetimestep;
             mongo::BSONObj timestepobj = QueryBuilder::buildSOMATimestepQuery(req.timestep);
 
             mainbuilder.appendElements(timestepobj);
@@ -375,7 +375,7 @@ bool handleQueryRequests(soma_manager::SOMAQueryObjsRequest & req, soma_manager:
         {
             if(req.objectids.size() > 0 && req.objecttypes.size() > 0)
             {
-                qDebug()<<req.objectids.size()<<req.objecttypes.size();
+              //  qDebug()<<req.objectids.size()<<req.objecttypes.size();
                 if(req.objectids[0] != "" && req.objecttypes[0] != "")
                 {
 
