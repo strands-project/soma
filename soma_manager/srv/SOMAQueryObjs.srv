@@ -1,17 +1,16 @@
-int8  query_type    ### 0: perform soma2objectquery
+int8  query_type    ### 0: perform soma object query
 		    ### 1: return all types and ids
 		    ### 2: return all rois
-		    ### 3: return min-max timestep limits along with dates for the collection
+		    ### 3: return min-max timestamp limits along with dates for the collection
 		    
 		    
-bool usetimestep    ### set timestep as a query field 
+
 bool uselowertime   ### use lower time limit as a query field
 bool useuppertime   ### use upper time limit as a query field
-bool usedates	    ### use dates as a query field. If the upper or lower date is 0, it is ignored. Note: If date is set as a field timestep is ignored
+bool usedates	    ### use dates as a query field. If the upper or lower date is 0, it is ignored.
 bool useweekday     ### use weekday as a query field
 bool useroi	    ### use roi as a query field
 
-int32 timestep      ### Timestep field of the query
 
 uint32 lowerhour    ### lower limit of the hour
 
@@ -21,7 +20,7 @@ uint32 lowerminutes  ### lower limit of minutes
 
 uint32 upperminutes  ### upper limit of minutes
 
-uint64 lowerdate     ### lower data in timestamp format
+uint64 lowerdate     ### lower date in timestamp format
 
 uint64 upperdate     ### upper date limit in timestamp format
 
@@ -35,10 +34,8 @@ string roi_id        ### id of the roi that will be used for within query
 
 
 ---
-int32[]  timedatelimits    ### returned timestep limits timedatelimits[0] -> min-timestep
-			   ### timedatelimits[1] -> max-timestep 
-			   ### timedatelimits[2] -> min-date
-			   ### timedatelimits[3] -> max-date
+int32[]  timedatelimits    ### timedatelimits[0] -> min-date in timestamp format
+			   ### timedatelimits[1] -> max-date in timestamp format
 
 string[] types             ### vector of object types present in current collection
 

@@ -16,8 +16,6 @@ std::string map_name="kthfloor6";
 
 struct SOMATimeLimits{
 
-    int maxtimestep;
-    int mintimestep;
 
     long mintimestamp;
     long maxtimestamp;
@@ -183,15 +181,15 @@ std::vector<std::vector<std::string> > fetchSOMAObjectTypesIDs()
     return result;
 
 }
-SOMATimeLimits getSOMACollectionMinMaxTimestep()
+SOMATimeLimits getSOMACollectionTimeLimits()
 {
 
 
     SOMATimeLimits limits;
     limits.mintimestamp = -1;
-    limits.mintimestep = -1;
+   // limits.mintimestep = -1;
     limits.maxtimestamp = -1;
-    limits.maxtimestep = -1;
+   // limits.maxtimestep = -1;
 
     ros::NodeHandle nl;
 
@@ -209,7 +207,7 @@ SOMATimeLimits getSOMACollectionMinMaxTimestep()
 
 
     if(somaobjects.size() > 0){
-        limits.maxtimestep = somaobjects[0]->timestep;
+      //  limits.maxtimestep = somaobjects[0]->timestep;
         limits.maxtimestamp = somaobjects[0]->logtimestamp;
     }
     //std::cout<<somaobjects[0]->timestep<<std::endl;
@@ -224,7 +222,7 @@ SOMATimeLimits getSOMACollectionMinMaxTimestep()
     if(somaobjects.size() > 0)
     {
 
-        limits.mintimestep = somaobjects[0]->timestep;
+      //  limits.mintimestep = somaobjects[0]->timestep;
         limits.mintimestamp = somaobjects[0]->logtimestamp;
     }
 
@@ -261,7 +259,7 @@ std::vector<soma_msgs::SOMAObject> querySOMAObjects(const mongo::BSONObj &queryo
     }
 
 
-    ROS_INFO("Query returned %d objects",res.size());
+    ROS_INFO("Query returned %d objects",(int)res.size());
 
     return res;
 
@@ -295,16 +293,7 @@ bool handleQueryRequests(soma_manager::SOMAQueryObjsRequest & req, soma_manager:
             mainbuilder.appendElements(bsonobj);
 
         }
-        // If timestep is used instead
-        else if(req.usetimestep)
-        {
-           // qDebug()<<"I am here at timestep"<<req.timestep<<req.usetimestep;
-            mongo::BSONObj timestepobj = QueryBuilder::buildSOMATimestepQuery(req.timestep);
 
-            mainbuilder.appendElements(timestepobj);
-
-
-        }
         // If any of the time limits are used
         if(req.uselowertime || req.useuppertime)
         {
@@ -516,10 +505,8 @@ bool handleQueryRequests(soma_manager::SOMAQueryObjsRequest & req, soma_manager:
     // Handle Query for timelimits
     else if(req.query_type == 3)
     {
-        SOMATimeLimits res = getSOMACollectionMinMaxTimestep();
+        SOMATimeLimits res = getSOMACollectionTimeLimits();
 
-        resp.timedatelimits.push_back(res.mintimestep);
-        resp.timedatelimits.push_back(res.maxtimestep);
         resp.timedatelimits.push_back(res.mintimestamp);
         resp.timedatelimits.push_back(res.maxtimestamp);
 
@@ -537,18 +524,16 @@ int main(int argc, char **argv){
 
     ros::NodeHandle n;
 
-
-    //std::string mongodbhost;
-    //std::string mongodbport;
     std::string roidb;
 
 
     if(argc < 2)
     {
 
-        std::cout<<
-                    "Running the query_manager_node with default arguments: ObjectsDBName: somadata, ObjectsCollectionName: object, ROICollectionName: roi"
-                 <<std::endl;
+        ROS_INFO(
+       "Running the SOMA query_manager_node with default arguments: ObjectsDB: somadata, ObjectsCollection: object, ROICollection: roi"
+                    );
+
         // std::cout << "Not enough input arguments!! Quitting..."<<std::endl;
 
         //  return -1;

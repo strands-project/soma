@@ -88,7 +88,7 @@ class SOMAManager():
         #Debug purposes
         #objs = self._msg_store.query(SOMAObject._type, message_query={}, projection_query={"pose":0, "mesh":0},limit=2, sort_query=[("_id",-1)])
 	#objs = self._msg_store.query(SOMAObject._type, message_query={})
-        print objs
+        #print objs
 
          # Get the SOMA map name and unique id
         resp = self._init_map()
