@@ -100,7 +100,7 @@ class SOMAROIManager():
 
         self._interactive = True
 
-        self._msg_store=MessageStoreProxy(database="somadata", collection="roi")
+        self._msg_store=MessageStoreProxy(database="somadata", collection="roi3")
 
         self._server = InteractiveMarkerServer("soma_roi")
 

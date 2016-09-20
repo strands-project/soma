@@ -21,6 +21,6 @@ int32 logtimeminutes 			# Automatically filled by SOMA insert service. Simplifie
 
 geometry_msgs/PoseArray posearray 	# The poses of the vertices
 
-string geotype 				# Point,Polygon,etc. For ROIS typw is Polygon 
+string geotype 				# Point,Polygon,etc. For ROIs type is Polygon 
 
 geometry_msgs/PoseArray geoposearray 	# Poses of the vertices in geospatial format lat,long

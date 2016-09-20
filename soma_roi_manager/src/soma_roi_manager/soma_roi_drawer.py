@@ -70,7 +70,13 @@ class SOMAROIDrawer():
         # default file
         rp = RosPack()
 
-        self._msg_store=MessageStoreProxy(database="somadata",collection="roi")
+        ''' Set the default color as blue '''
+        self.rgb = [0.0,0.0,1.0]
+        #self.rgb[0] = 0.0
+        #self.rgb[1] = 0.0
+        #self.rgb[2] = 1.0
+
+        self._msg_store=MessageStoreProxy(database="somadata",collection="roi2")
 
         s = rospy.Service('soma/draw_roi', DrawROI, self.handle_draw_roi)
 
@@ -80,9 +86,14 @@ class SOMAROIDrawer():
         rospy.spin()
 
     def handle_draw_roi(self,req):
-       self._delete_markers()
-       if(req.roi_id >=0):
-        return DrawROIResponse(self.load_objects(req.map_name,req.roi_id))
+       if(int(req.roi_id) >=0):
+           if(len(req.rgb)==3):
+               self.rgb = req.rgb
+           if not req.draw_all:
+               return DrawROIResponse(self.load_objects(req.map_name,req.roi_id,False))
+           elif req.draw_all:
+               return DrawROIResponse(self.load_objects(req.map_name,req.roi_id,True))
+
        return True
 
 
@@ -100,45 +111,39 @@ class SOMAROIDrawer():
         lat = 90 - math.degrees(math.acos(float(y) / earth_radius))
         return [lng , lat]
 
-    def _retrieve_objects(self, map_name, roi_id):
+    def _retrieve_objects(self, map_name, roi_id, draw_all):
+        if draw_all:
+            objs = self._msg_store.query(SOMAROIObject._type, message_query={"map_name": map_name,
+                                                                      })
+            return objs
 
         objs = self._msg_store.query(SOMAROIObject._type, message_query={"map_name": map_name,
-                                                                      "roi_id": roi_id})
-        #print objs
-        max_id = 0
-        max_roi_id = 0
-        for o,om in objs:
-            if int(o.id) > max_id:
-                max_id = int(o.id)
-            if int(o.roi_id) > max_roi_id:
-                max_roi_id = int(o.roi_id)
-        self._soma_id = max_id
-        self._soma_roi_id = max_roi_id
+                                                                      "id": roi_id})
+
 
         return objs
 
-    def load_objects(self, map_name, roi_id):
-
+    def load_objects(self, map_name, roi_id, draw_all):
+        self._delete_markers()
         # this is the array for roi ids
         self._soma_obj_roi_ids = dict()
 
         markerarray = MarkerArray()
 
         #get objects from db
-        objs = self._retrieve_objects(map_name,roi_id)
+        objs = self._retrieve_objects(map_name,roi_id,draw_all)
 
         # if collection is empty return False
         if not objs:
             return False
-
+        count = 1
         # otherwise, load all object from collection
         for o,om  in objs:
-            count = 1
             for pose in o.posearray.poses:
-                self.load_object(o.id, o.roi_id, o.type, pose,count,markerarray)
+                self.load_object(o.id, o.type, pose,count,markerarray)
                 count +=1
-            break
-        self.draw_roi(roi_id,o.posearray.poses,markerarray,count)
+            self.draw_roi(roi_id,o.posearray.poses,markerarray,count)
+            count +=1
 
         self.markerpub.publish(markerarray)
         return True
@@ -155,15 +160,15 @@ class SOMAROIDrawer():
             cc = cc+1
 
 
-    def load_object(self, soma_id, roi, soma_type, pose,markerno, markerarray):
+    def load_object(self, soma_id, soma_type, pose,markerno, markerarray):
 
-        int_marker = self.create_object_marker(soma_id, roi, soma_type, pose, markerno)
+        int_marker = self.create_object_marker(soma_id, soma_type, pose, markerno)
 
         markerarray.markers.append(int_marker)
 
 
 
-    def create_object_marker(self, soma_obj, roi, soma_type, pose,markerno):
+    def create_object_marker(self, soma_obj, soma_type, pose,markerno):
         # create an interactive marker for our server
         marker = Marker()
         marker.header.frame_id = "map"
@@ -207,11 +212,11 @@ class SOMAROIDrawer():
         marker.scale.x = 0.1
         marker.id= count
 
-        random.seed(10)
-        val = random.random()
-        marker.color.r = r_func(val)
-        marker.color.g = g_func(val)
-        marker.color.b = b_func(val)
+        #random.seed(10)
+        #val = random.random()
+        marker.color.r = self.rgb[0]#r_func(val)
+        marker.color.g = self.rgb[1]#g_func(val)
+        marker.color.b = self.rgb[2]#b_func(val)
         marker.color.a = 1.0
 
         marker.points = []

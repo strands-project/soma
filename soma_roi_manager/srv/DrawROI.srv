@@ -1,4 +1,6 @@
 string map_name
 string roi_id
+bool draw_all
+float32[] rgb
 ---
 bool result

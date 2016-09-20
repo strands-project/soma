@@ -21,8 +21,6 @@ struct SOMAROINameID{
 
 struct SOMATimeLimits{
 
-    int maxtimestep;
-    int mintimestep;
 
     long mintimestamp;
     long maxtimestamp;
