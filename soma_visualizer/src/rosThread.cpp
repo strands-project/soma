@@ -14,6 +14,8 @@
 
 
 #define SOMA_QUERY_ROIS 2
+#define SOMA_QUERY_TIMELIMITS 3
+
 
 typedef pcl::PointXYZRGB PointType;
 typedef pcl::PointCloud<PointType> Cloud;
@@ -233,8 +235,13 @@ void RosThread::fetchSOMAObjectTypesIDs()
 
     }
 
+    mongo::BSONObjBuilder builder;
+
+    builder.append("cloud",0);
+    builder.append("images",0);
+
     // Query all objects,
-    somastore.query(somaobjects);
+    somastore.query(somaobjects,mongo::BSONObj(),mongo::BSONObj(),mongo::BSONObj(),builder.obj());
 
     // List that stores the object types
     QStringList typesls;
@@ -250,8 +257,8 @@ void RosThread::fetchSOMAObjectTypesIDs()
 
         int maxindex = 0;
         long max = 0;
-        int maxtimestep = 0;
-        int mintimestep  =10000;
+
+
         int minindex = 0;
         long min = 10000000000;
 
@@ -277,7 +284,7 @@ void RosThread::fetchSOMAObjectTypesIDs()
 
 
 
-            if(max < somaobjects[i]->logtimestamp){
+       /*     if(max < somaobjects[i]->logtimestamp){
                 max = somaobjects[i]->logtimestamp;
                 maxindex = i;
             }
@@ -292,12 +299,12 @@ void RosThread::fetchSOMAObjectTypesIDs()
 
 
          //   limits.maxtimestep = maxtimestep;//somaobjects[maxindex]->timestep;
-         //   limits.maxtimestamp = somaobjects[maxindex]->logtimestamp;
+            limits.maxtimestamp = somaobjects[maxindex]->logtimestamp;
 
             limits.mintimestamp = min;
-            limits.mintimestep = mintimestep;//somaobjects[minindex]->timestep;
 
 
+*/
 
             //std::cout<<soma2objects[i].use_count()<<std::endl;
 
@@ -550,6 +557,22 @@ std::string RosThread::getSOMAObjectDateWithTimestep(int timestep)
 SOMATimeLimits RosThread::getSOMACollectionMinMaxTimelimits()
 {
 
+    //SOMATimeLimits limits;
+
+    soma_manager::SOMAQueryObjs query_objs;
+
+    query_objs.request.query_type = SOMA_QUERY_TIMELIMITS;
+
+    if(this->query_client.call(query_objs))
+    {
+       limits.mintimestamp =  query_objs.response.timedatelimits[0];
+
+       limits.maxtimestamp = query_objs.response.timedatelimits[1];
+
+        ROS_INFO("Date limits %d %d",limits.mintimestamp,limits.maxtimestamp);
+    }
+
+
 
     /* somaTimeLimits limits;
     limits.mintimestamp = -1;
@@ -683,7 +706,7 @@ std::vector<soma_msgs::SOMAObject> RosThread::querySOMAObjects(const mongo::BSON
 
 
 
-    somastore.query(somaobjects,queryobj);
+    somastore.query(somaobjects,queryobj,mongo::BSONObj(),mongo::BSONObj(),mongo::BSONObj(),false,30);
 
 
     if(somaobjects.size() > 0)

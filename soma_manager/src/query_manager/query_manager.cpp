@@ -11,7 +11,7 @@
 
 std::string objectsdbname="somadata";
 std::string roidbname="somadata";
-std::string objectscollectionname="soma";
+std::string objectscollectionname="object";
 std::string map_name="kthfloor6";
 
 struct SOMATimeLimits{
