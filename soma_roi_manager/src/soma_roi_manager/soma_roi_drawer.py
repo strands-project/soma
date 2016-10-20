@@ -76,7 +76,7 @@ class SOMAROIDrawer():
         #self.rgb[1] = 0.0
         #self.rgb[2] = 1.0
 
-        self._msg_store=MessageStoreProxy(database="somadata",collection="roi2")
+        self._msg_store=MessageStoreProxy(database="somadata",collection="roi")
 
         s = rospy.Service('soma/draw_roi', DrawROI, self.handle_draw_roi)
 
@@ -86,15 +86,14 @@ class SOMAROIDrawer():
         rospy.spin()
 
     def handle_draw_roi(self,req):
-       if(int(req.roi_id) >=0):
-           if(len(req.rgb)==3):
-               self.rgb = req.rgb
-           if not req.draw_all:
-               return DrawROIResponse(self.load_objects(req.map_name,req.roi_id,False))
-           elif req.draw_all:
-               return DrawROIResponse(self.load_objects(req.map_name,req.roi_id,True))
+        if(len(req.rgb)==3):
+            self.rgb = req.rgb
+        if not req.draw_all:
+            return DrawROIResponse(self.load_objects(req.map_name,req.roi_id,req.roi_conf,False))
+        elif req.draw_all:
+            return DrawROIResponse(self.load_objects(req.map_name,req.roi_id,req.roi_conf,True))
 
-       return True
+        return True
 
 
     def _delete_markers(self):
@@ -111,27 +110,36 @@ class SOMAROIDrawer():
         lat = 90 - math.degrees(math.acos(float(y) / earth_radius))
         return [lng , lat]
 
-    def _retrieve_objects(self, map_name, roi_id, draw_all):
+    def _retrieve_objects(self, map_name, roi_id, roi_conf, draw_all):
         if draw_all:
             objs = self._msg_store.query(SOMAROIObject._type, message_query={"map_name": map_name,
                                                                       })
             return objs
-
-        objs = self._msg_store.query(SOMAROIObject._type, message_query={"map_name": map_name,
+        if roi_conf == "":
+            objs = self._msg_store.query(SOMAROIObject._type, message_query={"map_name": map_name,
                                                                       "id": roi_id})
+        elif roi_id !="" and roi_conf != "":
+            objs = self._msg_store.query(SOMAROIObject._type, message_query={"map_name": map_name,
+                                                                      "id": roi_id, "config":roi_conf})
+        else:
+            objs = self._msg_store.query(SOMAROIObject._type, message_query={"map_name": map_name,
+                                                                      "config":roi_conf})
+
 
 
         return objs
 
-    def load_objects(self, map_name, roi_id, draw_all):
+    def load_objects(self, map_name, roi_id, roi_conf, draw_all):
+
         self._delete_markers()
-        # this is the array for roi ids
+
+	    # this is the array for roi ids
         self._soma_obj_roi_ids = dict()
 
         markerarray = MarkerArray()
 
         #get objects from db
-        objs = self._retrieve_objects(map_name,roi_id,draw_all)
+        objs = self._retrieve_objects(map_name,roi_id,roi_conf,draw_all)
 
         # if collection is empty return False
         if not objs:
@@ -149,6 +157,7 @@ class SOMAROIDrawer():
         return True
 
     def draw_roi(self, roi,poses,markerarray,ccstart):
+
         roicp = roi
 
         p = poses
@@ -168,19 +177,17 @@ class SOMAROIDrawer():
 
 
 
-    def create_object_marker(self, soma_obj, soma_type, pose,markerno):
-        # create an interactive marker for our server
+    def create_object_marker(self, soma_obj, soma_type, pose, markerno):
+
+	# create an interactive marker for our server
         marker = Marker()
         marker.header.frame_id = "map"
-        #int_marker.name = soma_obj+'_'+str(markerno)
-       #int_marker.description = soma_type + ' (' + roi +'_'+str(markerno)+  ')'
         marker.pose = pose
         marker.id = markerno;
-       # print marker.pose
+
         marker.pose.position.z = 0.01
 
 
-        #marker = Marker()
         marker.type = Marker.SPHERE
         marker.action = 0
         marker.scale.x = 0.25
@@ -200,7 +207,7 @@ class SOMAROIDrawer():
 
    # This part draws the line strips between the points
     def create_roi_marker(self, roi, pose, points, count):
-        #print "POINTS: " + str(points)
+
         #points are all the points belong to that roi, pose is one of the points
         marker = Marker()
 
@@ -222,7 +229,7 @@ class SOMAROIDrawer():
         marker.points = []
         for point in points:
             p = Point()
-            pose = point#self._soma_obj_pose[point]
+            pose = point
 
             p.x = pose.position.x - marker.pose.position.x
             p.y = pose.position.y - marker.pose.position.y

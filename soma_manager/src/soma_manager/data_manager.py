@@ -20,6 +20,7 @@ from soma_msgs.msg import SOMAROIObject, SOMAObject
 from soma_manager.srv import *
 from soma_map_manager.srv import *
 from std_msgs.msg import String
+from soma_manager.msg import *
 
 
 # SOMA Data Manager For storing and deleting data
@@ -50,7 +51,10 @@ class SOMADataManager():
         # Object deletion service
         dels = rospy.Service('soma/delete_objects',SOMADeleteObjs, self.handle_delete_request)
 
+        #Object update service
         upts = rospy.Service('soma/update_object',SOMAUpdateObject,self.handle_update_request)
+
+        self.new_objects_pub = rospy.Publisher('soma/new_objects_inserted',SOMANewObjects,queue_size=5)
 
         rospy.spin()
 
@@ -73,7 +77,8 @@ class SOMADataManager():
 
     # Handles the soma objects to be inserted
     def handle_insert_request(self,req):
-        _ids = list()
+        _ids = []
+        obj_ids = []
         for obj in req.objects:
 
           if(obj.logtimestamp == 0):
@@ -84,6 +89,7 @@ class SOMADataManager():
           obj.logminute = d.minute
           obj.logday = d.isoweekday()
           obj.logtimeminutes = obj.loghour*60 + obj.logminute
+          obj_ids.append(obj.id)
 
           if (obj.header.frame_id == ""):
               obj.header.frame_id = "/map"
@@ -109,13 +115,15 @@ class SOMADataManager():
 
           try:
                 _id = self._message_store.insert(obj)
-                st = String
-                st.data = _id
-                _ids.append(st)
+
+                _ids.append(str(_id))
 
           except:
                 return SOMAInsertObjsResponse(False,_ids)
 
+        msg = SOMANewObjects()
+        msg.ids = obj_ids
+        self.new_objects_pub.publish(msg)
         return SOMAInsertObjsResponse(True,_ids)
 
 

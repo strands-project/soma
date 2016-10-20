@@ -413,7 +413,7 @@ void RosThread::fetchSOMAROIs()
 {
     //std::vector<SOMAROINameID> res;
 
-    soma_manager::SOMAQueryObjs query_objs;
+  /*  soma_manager::SOMAQueryObjs query_objs;
 
     query_objs.request.query_type = SOMA_QUERY_ROIS;
 
@@ -438,7 +438,7 @@ void RosThread::fetchSOMAROIs()
 
     }
 
-    emit SOMAROINames(this->roinameids);
+    emit SOMAROINames(this->roinameids);*/
 
 
 }

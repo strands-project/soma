@@ -294,7 +294,7 @@ class SOMAManager():
         resp = self._insert_object_to_DB(soma_obj)
 
         if resp.result == True:
-            self._soma_obj_ids[soma_obj.id] = resp.db_ids[0].data
+            self._soma_obj_ids[soma_obj.id] = resp.db_ids[0]
             self._soma_obj_msg[soma_obj.id] = soma_obj
             self.load_object(str(soma_id), soma_type, soma_obj.pose)
 

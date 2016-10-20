@@ -31,3 +31,5 @@ string geotype 				# Point,Polygon,etc. For SOMA objects, it is automatically fi
 
 geometry_msgs/PoseArray geoposearray 	# The poses in geospatial format lat,long size= posearray+1 for forming the polygon
 
+string metadata			# This field is optional for storing additional information about the object
+

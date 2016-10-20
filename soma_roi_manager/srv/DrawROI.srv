@@ -1,6 +1,7 @@
-string map_name
-string roi_id
-bool draw_all
-float32[] rgb
+string map_name    # 2D map name for the rois
+string roi_id      # The id of the roi to be drawn
+string roi_config    # Optional: The configuration of the rois to be drawn
+bool draw_all      # True: draw all the rois in the db
+float32[] rgb      # Optional: Set the color array (default color is blue)
 ---
 bool result

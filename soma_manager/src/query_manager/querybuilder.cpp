@@ -117,7 +117,8 @@ mongo::BSONObj QueryBuilder::buildSOMAStringArrayBasedQuery(const std::vector<st
 
     mongo::BSONArrayBuilder arrbuilder;
 
-    for(int j = 0 ;j < fieldnames.size(); j++){
+    for(int j = 0 ;j < fieldnames.size(); j++)
+    {
 
         for(int i = realIndexes[j]; i < realIndexes[j]+objectIndexes[j]; i++)
         {

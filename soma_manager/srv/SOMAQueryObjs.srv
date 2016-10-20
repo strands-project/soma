@@ -1,7 +1,6 @@
 int8  query_type    ### 0: perform soma object query
-		    ### 1: return all types and ids
-		    ### 2: return all rois
-		    ### 3: return min-max timestamp limits along with dates for the collection
+		    ### 1: return all object types and ids
+		    ### 2: return min-max timestamp limits of the collection
 		    
 		    
 
@@ -12,9 +11,9 @@ bool useweekday     ### use weekday as a query field
 bool useroi	    ### use roi as a query field
 
 
-uint32 lowerhour    ### lower limit of the hour
+uint32 lowerhour     ### lower limit of the hour
 
-uint32 upperhour    ### upper limit of the hour
+uint32 upperhour     ### upper limit of the hour
 
 uint32 lowerminutes  ### lower limit of minutes
 
@@ -42,7 +41,5 @@ string[] types             ### vector of object types present in current collect
 string[] ids		   ### vector of object ids present in current collection
 
 soma_msgs/SOMAObject[] objects  ### vector of returned objects
-
-soma_msgs/SOMAROIObject[] rois  ### vector of returned rois
 
 string queryjson 	   ### performed query in json format
