@@ -7,12 +7,10 @@ int main(int argc, char **argv){
 
     QApplication app(argc,argv);
 
-    ros::init(argc, argv, "robot_state_viewer_node");
+    ros::init(argc, argv, "soma_visualizer_node");
 
     std::string objectsdbname;
     std::string objectscollectionname;
-    //std::string mongodbhost;
-    //std::string mongodbport;
     std::string roidb;
 
     MainWindow mw;
@@ -21,7 +19,7 @@ int main(int argc, char **argv){
     {
 
         std::cout<<
-                    "Running the robot_state_viewer with default arguments: MongoDB HostName:localhost, MongoDB Port:62345, ObjectsDBName: soma2data, ObjectsCollectionName:soma2, ROIDBName:soma2data"
+                    "Running the soma_visualizer with default arguments: MongoDB HostName:localhost, MongoDB Port:62345, ObjectsDBName: somadata, ObjectsCollectionName:object, ROIDBName:roi"
                  <<std::endl;
         // std::cout << "Not enough input arguments!! Quitting..."<<std::endl;
 
@@ -30,39 +28,33 @@ int main(int argc, char **argv){
     }
     else
     {
-        if(argc > 1){
+        if(argc > 1)
+        {
             objectsdbname = argv[1];
             mw.rosthread.setSOMAObjectsDBName(objectsdbname);
 
         }
-        if(argc >2){
+        if(argc >2)
+        {
             objectscollectionname = argv[2];
             mw.rosthread.setSOMAObjectsCollectionName(objectscollectionname);
-        }
-      /*  if(argc >3){
-            mongodbhost = argv[3];
-            mw.setMongoDBHostName(mongodbhost);
-        }
-        if(argc >4){
-            mongodbport = argv[4];
-            mw.setMongoDBPort(mongodbport);
-        }*/
-
+        }   
         if(argc >3){
             roidb = argv[3];
             mw.rosthread.setSOMAROIDBName(roidb);
+        }
+        if(argc > 4)
+        {
+            std::string str = argv[4];
+            mw.rosthread.setSOMAROICollectionName(str);
         }
 
     }
 
     qRegisterMetaType<std::vector<std::string> >();
-    qRegisterMetaType<std::vector<SOMAROINameID> >();
+    qRegisterMetaType<std::vector<SOMAROINameIDConfig> >();
 
     //RosThread thread();
-
-
-
-
 
 
     mw.show();

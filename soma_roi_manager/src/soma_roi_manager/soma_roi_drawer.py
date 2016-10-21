@@ -89,9 +89,9 @@ class SOMAROIDrawer():
         if(len(req.rgb)==3):
             self.rgb = req.rgb
         if not req.draw_all:
-            return DrawROIResponse(self.load_objects(req.map_name,req.roi_id,req.roi_conf,False))
+            return DrawROIResponse(self.load_objects(req.map_name,req.roi_id,req.roi_config,False))
         elif req.draw_all:
-            return DrawROIResponse(self.load_objects(req.map_name,req.roi_id,req.roi_conf,True))
+            return DrawROIResponse(self.load_objects(req.map_name,req.roi_id,req.roi_config,True))
 
         return True
 
@@ -110,26 +110,26 @@ class SOMAROIDrawer():
         lat = 90 - math.degrees(math.acos(float(y) / earth_radius))
         return [lng , lat]
 
-    def _retrieve_objects(self, map_name, roi_id, roi_conf, draw_all):
+    def _retrieve_objects(self, map_name, roi_id, roi_config, draw_all):
         if draw_all:
             objs = self._msg_store.query(SOMAROIObject._type, message_query={"map_name": map_name,
                                                                       })
             return objs
-        if roi_conf == "":
+        if roi_config == "":
             objs = self._msg_store.query(SOMAROIObject._type, message_query={"map_name": map_name,
                                                                       "id": roi_id})
-        elif roi_id !="" and roi_conf != "":
+        elif roi_id !="" and roi_config != "":
             objs = self._msg_store.query(SOMAROIObject._type, message_query={"map_name": map_name,
-                                                                      "id": roi_id, "config":roi_conf})
+                                                                      "id": roi_id, "config":roi_config})
         else:
             objs = self._msg_store.query(SOMAROIObject._type, message_query={"map_name": map_name,
-                                                                      "config":roi_conf})
+                                                                      "config":roi_config})
 
 
 
         return objs
 
-    def load_objects(self, map_name, roi_id, roi_conf, draw_all):
+    def load_objects(self, map_name, roi_id, roi_config, draw_all):
 
         self._delete_markers()
 
@@ -139,7 +139,7 @@ class SOMAROIDrawer():
         markerarray = MarkerArray()
 
         #get objects from db
-        objs = self._retrieve_objects(map_name,roi_id,roi_conf,draw_all)
+        objs = self._retrieve_objects(map_name,roi_id,roi_config,draw_all)
 
         # if collection is empty return False
         if not objs:

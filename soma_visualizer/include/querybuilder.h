@@ -12,7 +12,7 @@ public:
 
     static mongo::BSONObj buildSOMAROIWithinQuery(const soma_msgs::SOMAROIObject& roiobj);
 
-    static mongo::BSONObj buildSOMA2TypeEqualsQuery(const std::vector<std::string>& typelist);
+    // static mongo::BSONObj buildSOMA2TypeEqualsQuery(const std::vector<std::string>& typelist);
 
     static mongo::BSONObj buildSOMA2LabelContainsQuery(const std::string& text);
 
@@ -26,7 +26,6 @@ public:
 
     static mongo::BSONObj buildSOMA2StringArrayBasedQuery(const std::vector<std::string>& list, std::vector<std::string> fieldnames, std::vector<int> objectIndexes, std::string arrayOperator);
 
-private:
 };
 
 #endif // QUERYBUILDER_H

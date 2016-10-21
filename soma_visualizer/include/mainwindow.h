@@ -36,7 +36,7 @@ private slots:
 
     void  handleSOMAObjectTypes(std::vector<std::string> typenames);
 
-    void  handleSOMAROINames(std::vector<SOMAROINameID>);
+    void  handleSOMAROINames(std::vector<SOMAROINameIDConfig> roinameidconfigs);
 
     void on_queryButton_clicked();
 
@@ -58,7 +58,7 @@ private:
     QThread* thread;
     int maxtimestep;
     int mintimestep;
-    std::vector<SOMAROINameID> roinameids;
+    std::vector<SOMAROINameIDConfig> roinameidconfigs;
     mongo::BSONObj mainBSONObj;
     QString lastqueryjson;
    // std::string mongodbhost;

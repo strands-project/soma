@@ -1,4 +1,4 @@
-#include "querybuilder.h"
+#include "include/querybuilder.h"
 
 QueryBuilder::QueryBuilder()
 {

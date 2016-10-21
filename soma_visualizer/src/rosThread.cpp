@@ -11,10 +11,10 @@
 #include <QFile>
 #include <QTextStream>
 #include <soma_manager/SOMAQueryObjs.h>
+#include <soma_manager/SOMAQueryROIs.h>
 
-
-#define SOMA_QUERY_ROIS 2
-#define SOMA_QUERY_TIMELIMITS 3
+#define SOMA_QUERY_ROIS 0
+#define SOMA_QUERY_TIMELIMITS 2
 
 
 typedef pcl::PointXYZRGB PointType;
@@ -51,6 +51,11 @@ void RosThread::setSOMAROIDBName(std::string name)
     this->roibdname = name;
 
 }
+void RosThread::setSOMAROICollectionName(std::string name)
+{
+    this->roicollectionname = name;
+
+}
 
 std::string RosThread::getSOMAObjectsDBName()
 {
@@ -60,11 +65,14 @@ std::string RosThread::getSOMAObjectsCollectionName()
 {
     return this->objectscollectionname;
 }
-std::string RosThread::getROIDBName()
+std::string RosThread::getSOMAROIDBName()
 {
     return this->roibdname;
 }
-
+std::string RosThread::getSOMAROICollectionName()
+{
+    return this->roicollectionname;
+}
 void RosThread::loop()
 {
 
@@ -82,11 +90,11 @@ void RosThread::loop()
 
     ros::ServiceClient map_client = n.serviceClient<soma_map_manager::MapInfo>("soma/map_info");
 
+    this->object_query_client = n.serviceClient<soma_manager::SOMAQueryObjs>("soma/query_objects");
 
-    this->query_client = n.serviceClient<soma_manager::SOMAQueryObjs>("soma/query_db");
+    this->roi_query_client = n.serviceClient<soma_manager::SOMAQueryROIs>("soma/query_rois");
 
-
-    this->roi_client = n.serviceClient<soma_roi_manager::DrawROI>("soma/draw_roi");
+    this->roi_draw_client = n.serviceClient<soma_roi_manager::DrawROI>("soma/draw_roi");
 
     soma_map_manager::MapInfo srv;
 
@@ -94,7 +102,7 @@ void RosThread::loop()
 
     ROS_INFO("Waiting for map_info service from soma_map_manager");
 
-    if(!map_client.waitForExistence(ros::Duration(5)))
+    if(!map_client.waitForExistence(ros::Duration(30)))
     {
         ROS_WARN("Warning! SOMA map service is not active!! Quitting...");
 
@@ -104,15 +112,26 @@ void RosThread::loop()
 
     }
 
-    if(!query_client.waitForExistence(ros::Duration(5)))
+    if(!object_query_client.waitForExistence(ros::Duration(30)))
     {
-        ROS_WARN("Warning! SOMA query service is not active!! Quitting...");
+        ROS_WARN("Warning! SOMA object query service is not active!! Quitting...");
 
         emit rosFinished();
 
         return;
 
     }
+
+    if(!roi_query_client.waitForExistence(ros::Duration(30)))
+    {
+        ROS_WARN("Warning! SOMA roi query service is not active!! Quitting...");
+
+        emit rosFinished();
+
+        return;
+
+    }
+
 
 
 
@@ -174,7 +193,7 @@ void RosThread::drawROIwithID(std::string id)
     drawroi.request.map_name = this->map_name;
     drawroi.request.roi_id = id;
 
-    this->roi_client.call(drawroi);
+    this->roi_draw_client.call(drawroi);
 
 
 
@@ -192,7 +211,7 @@ void RosThread::fetchSOMAObjectTypesIDs()
 
     mongodb_store::MessageStoreProxy somastore(nl,this->objectscollectionname,this->objectsdbname);
 
-    std::vector<boost::shared_ptr<soma_msgs::SOMAObject> >  somaobjects;
+    std::vector< soma_msgs::SOMAObject>   somaobjects;
     std::vector<std::string> somalabels;
 
     QString dir = QDir::homePath();
@@ -235,13 +254,27 @@ void RosThread::fetchSOMAObjectTypesIDs()
 
     }
 
-    mongo::BSONObjBuilder builder;
+  /*  mongo::BSONObjBuilder builder;
 
     builder.append("cloud",0);
-    builder.append("images",0);
+    builder.append("images",0);*/
 
     // Query all objects,
-    somastore.query(somaobjects,mongo::BSONObj(),mongo::BSONObj(),mongo::BSONObj(),builder.obj());
+   // somastore.query(somaobjects,mongo::BSONObj(),mongo::BSONObj(),mongo::BSONObj(),builder.obj());
+
+    soma_manager::SOMAQueryObjs queryobjs;
+
+    queryobjs.request.query_type = 1;
+
+    if(!this->object_query_client.call(queryobjs))
+    {
+        ROS_WARN("Warning!! Object query service cannot be called!!");
+        file.close();
+        file2.close();
+        return;
+    }
+
+
 
     // List that stores the object types
     QStringList typesls;
@@ -252,86 +285,48 @@ void RosThread::fetchSOMAObjectTypesIDs()
     nl.shutdown();
 
     // If we have any objects
-    if(somaobjects.size()>0)
+    if(queryobjs.response.types.size()>0)
     {
 
-        int maxindex = 0;
-        long max = 0;
 
-
-        int minindex = 0;
-        long min = 10000000000;
-
-        for(int i = 0; i < somaobjects.size(); i++)
+        for(int i = 0; i < queryobjs.response.types.size(); i++)
         {
             QString str;
 
-            QString str2;
 
 
+            str.append(QString::fromStdString(queryobjs.response.types[i]));
 
-            //   spr = somaobjects[i];
-
-            str.append(QString::fromStdString(somaobjects[i]->type));
-
-            str2.append(QString::fromStdString(somaobjects[i]->id));
 
 
             typesls.append(str);
 
-            idsls.append(str2);
 
-
-
-
-       /*     if(max < somaobjects[i]->logtimestamp){
-                max = somaobjects[i]->logtimestamp;
-                maxindex = i;
-            }
-
-            if(min > somaobjects[i]->logtimestamp)
-            {
-                min = somaobjects[i]->logtimestamp;
-                minindex = i;
-            }
-
-
-
-
-         //   limits.maxtimestep = maxtimestep;//somaobjects[maxindex]->timestep;
-            limits.maxtimestamp = somaobjects[maxindex]->logtimestamp;
-
-            limits.mintimestamp = min;
-
-
-*/
-
-            //std::cout<<soma2objects[i].use_count()<<std::endl;
 
 
         }
     }
 
-    //  somaobjects.clear();
-
-
-    // Remove duplicate names
-    typesls.removeDuplicates();
-
-    // Sort the types
-    // typesls.sort(Qt::CaseInsensitive);
-
-
-    QCollator collator;
-    collator.setNumericMode(true);
-
-    std::sort(
-                typesls.begin(),
-                typesls.end(),
-                [&collator](const QString &file1, const QString &file2)
+    // If we have any objects
+    if(queryobjs.response.ids.size()>0)
     {
-        return collator.compare(file1, file2) < 0;
-    });
+
+
+        for(int i = 0; i < queryobjs.response.ids.size(); i++)
+        {
+            QString str;
+
+
+            str.append(QString::fromStdString(queryobjs.response.ids[i]));
+
+
+            idsls.append(str);
+
+
+
+        }
+    }
+
 
 
     QTextStream stream(&file);
@@ -355,20 +350,6 @@ void RosThread::fetchSOMAObjectTypesIDs()
 
     file.close();
 
-    // Remove duplicate names
-    idsls.removeDuplicates();
-
-    // Sort the ids
-    // idsls.sort(Qt::CaseInsensitive);
-
-
-    std::sort(
-                idsls.begin(),
-                idsls.end(),
-                [&collator](const QString &file1, const QString &file2)
-    {
-        return collator.compare(file1, file2) < 0;
-    });
 
 
     QTextStream stream2(&file2);
@@ -393,16 +374,6 @@ void RosThread::fetchSOMAObjectTypesIDs()
     file2.close();
 
 
-
-    /* std::sort(res.begin(), res.end());
-
-    auto last = std::unique(res.begin(), res.end());
-
-    res.erase(last, res.end());*/
-
-    //res.resize( std::distance(res.begin(),it) );
-
-
     emit SOMAObjectTypes(somalabels);
 
     return ;
@@ -411,25 +382,26 @@ void RosThread::fetchSOMAObjectTypesIDs()
 
 void RosThread::fetchSOMAROIs()
 {
-    //std::vector<SOMAROINameID> res;
 
-  /*  soma_manager::SOMAQueryObjs query_objs;
 
-    query_objs.request.query_type = SOMA_QUERY_ROIS;
+    soma_manager::SOMAQueryROIs query_rois;
 
-    if(this->query_client.call(query_objs))
+    query_rois.request.query_type = SOMA_QUERY_ROIS;
+
+    if(this->roi_query_client.call(query_rois))
     {
-        if(query_objs.response.rois.size() > 0)
+        if(query_rois.response.rois.size() > 0)
         {
 
 
-                for(auto &roi:query_objs.response.rois)
+                for(auto &roi:query_rois.response.rois)
                 {
                     // res.push_back(roi->type.data());
-                    SOMAROINameID roinameid;
-                    roinameid.id = roi.id.data();
-                    roinameid.name = roi.type.data();
-                    this->roinameids.push_back(roinameid);
+                    SOMAROINameIDConfig roinameidconfig;
+                    roinameidconfig.id = roi.id.data();
+                    roinameidconfig.name = roi.type.data();
+                    roinameidconfig.config = roi.config.data();
+                    this->roinameidconfigs.push_back(roinameidconfig);
                     this->roiarray.push_back(roi);
                 }
 
@@ -438,7 +410,7 @@ void RosThread::fetchSOMAROIs()
 
     }
 
-    emit SOMAROINames(this->roinameids);*/
+    emit SOMAROINames(this->roinameidconfigs);
 
 
 }
@@ -563,7 +535,7 @@ SOMATimeLimits RosThread::getSOMACollectionMinMaxTimelimits()
 
     query_objs.request.query_type = SOMA_QUERY_TIMELIMITS;
 
-    if(this->query_client.call(query_objs))
+    if(this->object_query_client.call(query_objs))
     {
        limits.mintimestamp =  query_objs.response.timedatelimits[0];
 

@@ -13,6 +13,8 @@
 std::string objectsdbname="somadata";
 std::string roidbname="somadata";
 std::string objectscollectionname="object";
+std::string roiscollectionname="roi";
+
 std::string map_name="kthfloor6";
 
 struct SOMATimeLimits{
@@ -28,7 +30,7 @@ void fetchSOMAROIConfigsIDs(std::vector<std::string>& configs, std::vector<std::
 
     ros::NodeHandle nl;
 
-    mongodb_store::MessageStoreProxy somastore(nl,"roi",roidbname);
+    mongodb_store::MessageStoreProxy somastore(nl,roiscollectionname,roidbname);
 
     mongo::BSONObjBuilder builder;
 
@@ -310,9 +312,7 @@ std::vector<soma_msgs::SOMAObject> querySOMAObjects(const mongo::BSONObj &queryo
     std::vector<soma_msgs::SOMAObject> res;
 
 
-
     std::vector<boost::shared_ptr<soma_msgs::SOMAObject> > somaobjects;
-
 
 
     somastore.query(somaobjects,queryobj);
@@ -340,7 +340,7 @@ std::vector<soma_msgs::SOMAROIObject> querySOMAROIs(const mongo::BSONObj &queryo
 
     ros::NodeHandle nl;
 
-    mongodb_store::MessageStoreProxy somastore(nl,"roi",roidbname);
+    mongodb_store::MessageStoreProxy somastore(nl,roiscollectionname,roidbname);
 
 
     std::vector<soma_msgs::SOMAROIObject> res;
@@ -826,14 +826,11 @@ int main(int argc, char **argv){
 
     ros::NodeHandle n;
 
-    std::string roidb;
-
-
     if(argc < 2)
     {
 
         ROS_INFO(
-                    "Running the SOMA query_manager_node with default arguments: ObjectsDB: somadata, ObjectsCollection: object, ROICollection: roi"
+                    "Running the SOMA query_manager_node with default arguments: ObjectsDB: somadata, ObjectsCollection: object, ROIDB: somadata, ROICollection: roi"
                     );
 
         // std::cout << "Not enough input arguments!! Quitting..."<<std::endl;
@@ -845,16 +842,20 @@ int main(int argc, char **argv){
     {
         if(argc > 1){
             objectsdbname = argv[1];
-            //mw.rosthread.setSOMAObjectsDBName(objectsdbname);
+
 
         }
         if(argc > 2){
             objectscollectionname = argv[2];
-            // mw.rosthread.setSOMAObjectsCollectionName(objectscollectionname);
+
         }
         if(argc >3){
-            roidb = argv[3];
-            //mw.rosthread.setSOMAROIDBName(roidb);
+            roidbname = argv[3];
+
+        }
+        if(argc >4){
+            roiscollectionname = argv[4];
+
         }
 
     }
@@ -881,11 +882,6 @@ int main(int argc, char **argv){
 
     ros::spin();
 
-    /*ros::NodeHandle n;
-
-    mongodb_store::MessageStoreProxy somastore(n,this->objectscollectionname,this->objectsdbname);*/
-
-    //RosThread thread();
 
 
 

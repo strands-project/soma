@@ -7,7 +7,7 @@ project(soma_visualizer)
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   rospy
-  std_msgs sensor_msgs pcl_ros mongodb_store soma_msgs nav_msgs soma_map_manager soma_roi_manager
+  std_msgs sensor_msgs pcl_ros mongodb_store soma_msgs nav_msgs soma_map_manager soma_roi_manager soma_manager
 )
 
 set(CMAKE_BUILD_TYPE Release)
@@ -142,7 +142,7 @@ QT5_WRAP_UI(uis_h ${qt_FORMS})
 catkin_package(
   INCLUDE_DIRS include
 #  LIBRARIES robot_state_viewer
-  CATKIN_DEPENDS roscpp rospy std_msgs sensor_msgs nav_msgs  pcl_ros mongodb_store
+  CATKIN_DEPENDS roscpp rospy std_msgs sensor_msgs nav_msgs  pcl_ros mongodb_store soma_map_manager soma_roi_manager soma_manager
 #  DEPENDS system_lib
 )
 

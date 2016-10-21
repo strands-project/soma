@@ -29,10 +29,9 @@ MainWindow::MainWindow(QWidget *parent) :
 
     connect(&rosthread,SIGNAL(mapinfoReceived()),this,SLOT(handleMapInfoReceived()));
 
-    connect(&rosthread,SIGNAL(SOMAROINames(std::vector<SOMAROINameID>)),this,SLOT(handleSOMAROINames(std::vector<SOMAROINameID>)));
+    connect(&rosthread,SIGNAL(SOMAROINames(std::vector<SOMAROINameIDConfig>)),this,SLOT(handleSOMAROINames(std::vector<SOMAROINameIDConfig>)));
 
     connect(&rosthread,SIGNAL(SOMAObjectTypes(std::vector<std::string>)),this,SLOT(handleSOMAObjectTypes(std::vector<std::string>)));
-
 
     connect(&rosthread,SIGNAL(rosFinished()),this,SLOT(close()));
 
@@ -327,20 +326,22 @@ void MainWindow::handleSOMAObjectTypes(std::vector<std::string> typenames)
 
 
 }
-void MainWindow::handleSOMAROINames(std::vector<SOMAROINameID> roinameids)
+void MainWindow::handleSOMAROINames(std::vector<SOMAROINameIDConfig> roinameidconfigs)
 {
     qDebug()<<"ROI Info Received";
 
-    this->roinameids = roinameids;
+    this->roinameidconfigs = roinameidconfigs;
 
     ui->roiComboBox->addItem("");
 
-    for(int i = 0; i < roinameids.size();i++)
+    for(int i = 0; i < roinameidconfigs.size();i++)
     {
         QString str;
-        str = QString::fromStdString(roinameids[i].name);
+        str = QString::fromStdString(roinameidconfigs[i].name);
 
-        str.append(" ").append(QString::fromStdString(roinameids[i].id));
+        str.append(" ").append(QString::fromStdString(roinameidconfigs[i].id));
+
+        str.append(" ").append(QString::fromStdString(roinameidconfigs[i].config));
 
         ui->roiComboBox->addItem(str);
 
@@ -558,7 +559,7 @@ void MainWindow::on_queryButton_clicked()
 
         //  qDebug()<<"Current Index"<<roiintindex<<this->roinameids.size();
 
-        QString roiindex = QString::fromStdString(this->roinameids[roiintindex-1].id);
+        QString roiindex = QString::fromStdString(this->roinameidconfigs[roiintindex-1].id);
 
         soma_msgs::SOMAROIObject obj =  rosthread.getSOMAROIwithID(roiindex.toInt());
 

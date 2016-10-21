@@ -485,14 +485,19 @@ class SOMAROIManager():
                 self.load_object(str(soma_id),soma_type,p)
                 self._soma_obj_pose[soma_obj.id][str(i)] = p
                 soma_obj.posearray.poses.append(p)
-
-            _id = self._msg_store.insert(soma_obj)
-
-            self._soma_obj_ids[soma_obj.id] = _id
-
-            self._soma_obj_type[soma_obj.id] = soma_type
-
-            self._soma_obj_msg[soma_obj.id] = soma_obj
+            
+            # If we have at least 3 vertices add geojson part and a new object
+            if len(soma_obj.posearray.poses) >=3:
+                self.insert_geo_json(soma_obj)
+                try:
+			_id = self._msg_store.insert(soma_obj)
+			self._soma_obj_ids[soma_obj.id] = _id
+			self._soma_obj_type[soma_obj.id] = soma_type
+			self._soma_obj_msg[soma_obj.id] = soma_obj
+		except:
+			soma_obj.geotype = ''
+                	soma_obj.geoposearray = []
+                	rospy.logerr("The polygon of %s %s is malformed (self-intersecting) => Please update geometry." % (soma_obj.type, soma_obj.id))
 
 
 
@@ -508,7 +513,7 @@ class SOMAROIManager():
 
         #iterate through the objects.
         for o,om in res:
-	    print o
+	   # print o
             soma_obj = o
 	    break
 
@@ -547,7 +552,7 @@ class SOMAROIManager():
     def insert_geo_json(self,soma_obj):
 
         geo_json = self.geo_json_from_soma_obj(soma_obj)
-        if geo_json:
+        if geo_json != None:
             soma_obj.geotype = geo_json['loc']['type']
             soma_obj.geoposearray = geo_json['loc']['coordinates']
         else:
@@ -603,7 +608,7 @@ class SOMAROIManager():
             dt = datetime.utcfromtimestamp(soma_obj.logtimestamp)
             soma_obj.loghour = int(dt.hour)
             soma_obj.logminute = int(dt.minute)
-            soma_obj.logday = int(dt.weekday())
+            soma_obj.logday = int(dt.weekday())+1
             soma_obj.logtimeminutes = int(dt.hour)*60 + int(dt.minute)
         else:
             #convert to uint32

@@ -12,14 +12,17 @@
 #include <algorithm>    // std::unique, std::distance
 #include <vector>       // std::vector
 
-struct SOMAROINameID{
+struct SOMAROINameIDConfig
+{
 
     std::string id;
     std::string name;
+    std::string config;
 
 };
 
-struct SOMATimeLimits{
+struct SOMATimeLimits
+{
 
 
     long mintimestamp;
@@ -44,10 +47,7 @@ public:
      // Returns the combined cloud of soma2objects
      sensor_msgs::PointCloud2 getSOMACombinedObjectCloud(const std::vector<soma_msgs::SOMAObject>& somaobjects);
 
-
-
     // sensor_msgs::PointCloud2 getSOMA2ObjectCloudsWithTimestep(int timestep);
-
 
      // Publish SOMA combined Object Cloud
      void publishSOMAObjectCloud(sensor_msgs::PointCloud2 msg);
@@ -64,52 +64,49 @@ public:
      // Get the SOMA ROI with id
      soma_msgs::SOMAROIObject getSOMAROIwithID(int id);
 
-     // Query the SOMA2 objects
+     // Query the SOMA objects
      std::vector<soma_msgs::SOMAObject> querySOMAObjects(const mongo::BSONObj& queryobj);
 
-     // Query the SOMA2 objects using timeinterval
-  //   std::vector<soma2_msgs::SOMA2Object> querySOMA2ObjectsWithDate(const mongo::BSONObj& queryobj);
-
-     // Set the DB name for SOMA2 objects
+     // Set the DB name for SOMa objects
      void setSOMAObjectsDBName(std::string name);
 
-     // Set the collection name for SOMA2 objects
+     // Set the collection name for SOMa objects
      void setSOMAObjectsCollectionName(std::string name);
 
+     // Set the DB name for SOMa rois
      void setSOMAROIDBName(std::string name);
 
-     // Get the DB name for SOMA2 objects
+     // Set the Collection for SOMa rois
+     void setSOMAROICollectionName(std::string name);
+
+     // Get the DB name for SOMa objects
      std::string getSOMAObjectsDBName();
 
-     // Get the collection name for SOMA2 objects
+     // Get the collection name for SOMa objects
      std::string getSOMAObjectsCollectionName();
 
-	
+     // Get the time limits of SOMa objects
      SOMATimeLimits getSOMACollectionMinMaxTimelimits();
 
 
+     std::string getSOMAROIDBName();
 
-     std::string getROIDBName();
+     std::string getSOMAROICollectionName();
 
-   //  std::vector<int> getSOMA2CollectionMinMaxTimestep();
-
-    // std::vector<std::string> getSOMA2ObjectLabels();
 
 private:
      bool shutdown;
      ros::NodeHandle n;
      ros::Publisher pcp;
-     ros::ServiceClient roi_client;
-     ros::ServiceClient query_client;
+     ros::ServiceClient roi_query_client;
+     ros::ServiceClient object_query_client;
+     ros::ServiceClient roi_draw_client;
 
      std::string objectsdbname;
      std::string objectscollectionname;
      std::string roibdname;
+     std::string roicollectionname;
      SOMATimeLimits limits;
-    // mongodb_store_modified::MongoFindRequest req;
-   //  mongodb_store::MessageStoreProxy soma2messagestore;
-   //  mongodb_store::MessageStoreProxy soma2messagestoreROI;
-
 
      // Get the ROIs from db
      void fetchSOMAROIs();
@@ -117,10 +114,9 @@ private:
      // Get the object labels from db
      void fetchSOMAObjectTypesIDs();
 
-
      std::string map_name;
      std::string map_unique_id;
-     std::vector<SOMAROINameID> roinameids;
+     std::vector<SOMAROINameIDConfig> roinameidconfigs;
      std::vector<std::string> labelnames;
      std::vector <soma_msgs::SOMAROIObject> roiarray;
    //  std::vector<boost::shared_ptr<soma2_msgs::SOMA2Object> >  soma2objects;
@@ -135,7 +131,7 @@ signals:
    void  mapinfoReceived();
    void  SOMAObjectTypes(std::vector<std::string>);
    void  SOMAObjectIDs(std::vector<std::string>);
-   void  SOMAROINames(std::vector<SOMAROINameID>);
+   void  SOMAROINames(std::vector<SOMAROINameIDConfig>);
 
 public slots:
    //void getSliderValue(int val);
@@ -146,4 +142,4 @@ public slots:
 
 };
 Q_DECLARE_METATYPE (std::vector<std::string>)
-Q_DECLARE_METATYPE (std::vector<SOMAROINameID>)
+Q_DECLARE_METATYPE (std::vector<SOMAROINameIDConfig>)
