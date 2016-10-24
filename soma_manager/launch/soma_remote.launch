@@ -1,11 +1,15 @@
 <launch>
 	<arg name="port" default="62345"/>
-	<arg name="host" default="127.0.0.1" />
+	<arg name="host" default="192.168.1.10" />
         <arg name="use_localdatacenter" default="false" />
 	<arg name="map_name"/>
 	<arg name="db_name" default="somadata" />
         <arg name="object_collection_name" default="object"/>
         <arg name="roi_collection_name" default="roi"/>
+
+        <param name="mongodb_port" value="$(arg port)" />
+	<param name="mongodb_host" value="$(arg host)" />
+ 
 
 <node name="message_store" pkg="mongodb_store" type="message_store_node.py">
 	<param name="mongodb_use_localdatacenter" value="$(arg use_localdatacenter)" />
