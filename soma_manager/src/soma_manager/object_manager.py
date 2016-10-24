@@ -104,6 +104,9 @@ class SOMAManager():
         if(self._check_soma_insertservice() == False):
             return None
 
+        if(self._check_soma_queryservice() == False):
+            return None
+
         self._server = InteractiveMarkerServer("soma")
 
         self._init_types()
@@ -140,6 +143,16 @@ class SOMAManager():
             return True
         except:
             rospy.logerr("No SOMA insert service!! Quitting...")
+            return False
+    # Checks the soma insert service information from soma data_manager
+    def _check_soma_queryservice(self):
+        print "Waiting for SOMA object query service..."
+        try:
+            rospy.wait_for_service('soma/query_objects', timeout=5)
+            rospy.loginfo("SOMA object query service is active...")
+            return True
+        except:
+            rospy.logerr("No SOMA query service!! Quitting...")
             return False
 
     def _init_types(self):
@@ -220,19 +233,28 @@ class SOMAManager():
 
     def _retrieve_objects(self):
 
-        objs = self._msg_store.query(SOMAObject._type, message_query={"map_name":self.soma_map,"config":self.soma_conf})
+        query_objects = rospy.ServiceProxy('soma/query_objects',SOMAQueryObjs)
+
+        resp = query_objects(query_type=0,config=self.soma_conf)
+        if resp:
+            objs = resp.objects
+        else:
+            return None
 
         max_id = 0
-        for o,om in objs:
+        for o in objs:
             if int(o.id) > max_id:
                 max_id = int(o.id)
         self._soma_id = max_id
 
-        return objs
+        return resp
 
     def load_objects(self):
 
-        objs = self._retrieve_objects()
+        resp = self._retrieve_objects()
+
+        objs = resp.objects
+        unique_ids = resp.unique_ids
 
         # if collection is empty insert initial object
         if not objs:
@@ -241,10 +263,12 @@ class SOMAManager():
             return
 
         # otherwise, load all object from collection
-        for o, om  in objs:
-            self._soma_obj_ids[o.id] = om['_id']
+
+        for i,o in enumerate(objs):
+            self._soma_obj_ids[o.id] = unique_ids[i]
             self._soma_obj_msg[o.id] = o
             self.load_object(o.id, o.type, o.pose)
+
 
 
     def load_object(self, soma_id, soma_type, pose):
@@ -336,9 +360,6 @@ class SOMAManager():
 
         st = String()
         st.data = '%s'%str(_id)
-        #st.data =  (str(_id)+ '.')[:-1]
-
-    #    self._msg_store.update_id(_id, new_msg)
 
         update_object = rospy.ServiceProxy('soma/update_object',SOMAUpdateObject)
         try:

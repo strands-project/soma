@@ -16,6 +16,8 @@ public:
 
     static mongo::BSONObj buildSOMALabelContainsQuery(const std::string& text);
 
+    static mongo::BSONObj buildSOMAConfigQuery(const std::string& text);
+
     static mongo::BSONObj buildSOMAWeekdayQuery(int index);
 
     static mongo::BSONObj buildSOMADateQuery(unsigned long lowerdate, unsigned long upperdate, int mode);

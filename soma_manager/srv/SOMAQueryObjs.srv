@@ -31,6 +31,8 @@ string[] objecttypes ### array of object types that will be queried with or stat
 
 string roi_id        ### id of the roi that will be used for within query
 
+string config		   ### retrieve objects with specific configuration
+
 
 ---
 int32[]  timedatelimits    ### timedatelimits[0] -> min-date in timestamp format
@@ -39,6 +41,8 @@ int32[]  timedatelimits    ### timedatelimits[0] -> min-date in timestamp format
 string[] types             ### vector of object types present in current collection
 
 string[] ids		   ### vector of object ids present in current collection
+
+string[] unique_ids        ### vector of mongo unique ids of objects
 
 soma_msgs/SOMAObject[] objects  ### vector of returned objects
 

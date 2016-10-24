@@ -301,7 +301,7 @@ SOMATimeLimits getSOMACollectionTimeLimits()
     return limits;
 
 }
-std::vector<soma_msgs::SOMAObject> querySOMAObjects(const mongo::BSONObj &queryobj)
+std::vector<std::pair< boost::shared_ptr<soma_msgs::SOMAObject>, mongo::BSONObj> > querySOMAObjects(const mongo::BSONObj &queryobj)
 {
 
     ros::NodeHandle nl;
@@ -311,14 +311,18 @@ std::vector<soma_msgs::SOMAObject> querySOMAObjects(const mongo::BSONObj &queryo
 
     std::vector<soma_msgs::SOMAObject> res;
 
+    std::vector<std::pair< boost::shared_ptr<soma_msgs::SOMAObject>, mongo::BSONObj> > somaobjectsmetas;
+
 
     std::vector<boost::shared_ptr<soma_msgs::SOMAObject> > somaobjects;
 
 
-    somastore.query(somaobjects,queryobj);
+   // somastore.query(somaobjects,queryobj);
+
+    somastore.query(somaobjectsmetas,queryobj);
 
 
-    if(somaobjects.size() > 0)
+  /*  if(somaobjects.size() > 0)
     {
         for(auto &object:somaobjects)
         {
@@ -326,12 +330,12 @@ std::vector<soma_msgs::SOMAObject> querySOMAObjects(const mongo::BSONObj &queryo
             //qDebug()<<labelled_object.use_count;
         }
 
-    }
+    }*/
 
 
-    ROS_INFO("Query returned %d objects",(int)res.size());
+    ROS_INFO("Query returned %d objects",somaobjectsmetas.size());
 
-    return res;
+    return somaobjectsmetas;
 
 
 }
@@ -571,15 +575,42 @@ bool handleObjectQueryRequests(soma_manager::SOMAQueryObjsRequest & req, soma_ma
 
         }
 
-        if(mainbuilder.len() > 0){
+        if(req.config != "" && req.config.size() > 1)
+        {
+            mongo::BSONObj bsonobj = QueryBuilder::buildSOMAConfigQuery(req.config);
+
+            mainbuilder.appendElements(bsonobj);
+
+        }
+
+        if(mainbuilder.len() > 0)
+        {
 
             mongo::BSONObj tempObject = mainbuilder.obj();
 
             // qDebug()<<QString::fromStdString(tempObject.jsonString());
 
-            std::vector< soma_msgs::SOMAObject > somaobjects =  querySOMAObjects(tempObject);
+           // std::vector< soma_msgs::SOMAObject > somaobjects =  querySOMAObjects(tempObject);
 
-            resp.objects = somaobjects;
+            std::vector<std::pair< boost::shared_ptr<soma_msgs::SOMAObject>, mongo::BSONObj> > somaobjectsmetas = querySOMAObjects(tempObject);
+
+            for(size_t i = 0; i < somaobjectsmetas.size(); i++)
+            {
+                resp.objects.push_back(*somaobjectsmetas[i].first);
+                mongo::BSONObj obj = somaobjectsmetas[i].second;
+                mongo::BSONElement _idelement = obj.getField("_id");
+
+                std::string _id = _idelement.toString(false);
+
+                /*** Removing the ObjectId(...) part from the unique id.
+                 * Only the part within the paranthesis is important for us***/
+                _id.erase(_id.begin(),_id.begin()+10);
+                _id.erase(_id.end()-2,_id.end());
+                /**********************************************************/
+                resp.unique_ids.push_back(_id);
+
+            }
+
             resp.queryjson = tempObject.jsonString();
 
         }

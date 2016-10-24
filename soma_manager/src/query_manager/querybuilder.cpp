@@ -22,6 +22,15 @@ mongo::BSONObj QueryBuilder::buildSOMALabelContainsQuery(const std::string &text
 
 
 }
+mongo::BSONObj QueryBuilder::buildSOMAConfigQuery(const std::string &text)
+{
+     mongo::BSONObjBuilder builder;
+
+     builder.append("config",text);
+
+     return builder.obj();
+
+}
 mongo::BSONObj QueryBuilder::buildSOMADateQuery(unsigned long lowerdate, unsigned long upperdate, int mode)
 {
     mongo::BSONObjBuilder builder;
