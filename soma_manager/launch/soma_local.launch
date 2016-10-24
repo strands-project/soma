@@ -1,0 +1,15 @@
+<launch>
+	 
+	<arg name="map_name"/>
+	<arg name="db_name" default="somadata" />
+        <arg name="object_collection_name" default="object"/>
+        <arg name="roi_collection_name" default="roi"/>
+
+<node name="soma_map" pkg="soma_map_manager" type="soma_map_manager_node.py" args="--mapname $(arg map_name)" output="screen"/>
+	
+<node name="soma_data_manager_node" pkg="soma_manager" type="data_manager_node.py" args="--object_db_name $(arg db_name) --object_collection_name $(arg object_collection_name)" output="screen"/>
+
+<node name="soma_query_manager_node" pkg="soma_manager" type="soma_query_manager_node" args="$(arg db_name) $(arg object_collection_name) $(arg db_name) $(arg roi_collection_name)" output="screen"/>
+	
+   
+</launch>

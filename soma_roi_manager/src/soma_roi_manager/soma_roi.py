@@ -79,7 +79,7 @@ def b_func(x):
 
 class SOMAROIManager():
 
-    def __init__(self, soma_conf, config_file=None):
+    def __init__(self, soma_conf, config_file=None, db_name ="somadata", collection_name="roi"):
 
         self.map_unique_id = -1
         self.soma_conf = soma_conf
@@ -98,11 +98,16 @@ class SOMAROIManager():
         self._soma_obj_pose = dict()
         self._soma_obj_markers = dict()
 
+	self.db_name = db_name
+        self.collection_name = collection_name
+
         self._interactive = True
 
-        self._msg_store=MessageStoreProxy(database="somadata", collection="roi")
+        self._msg_store=MessageStoreProxy(database=self.db_name, collection=self.collection_name)
 
         self._server = InteractiveMarkerServer("soma_roi")
+
+        rospy.loginfo("Running SOMA ROI Manager (conf: %s, types: %s db_name: %s collection_name: %s)", self.soma_conf, config_file,self.db_name,self.collection_name)
 
         self._init_types()
 
@@ -787,7 +792,7 @@ class SOMAROIManager():
         marker.points.append(p)
         return int_marker
 
-
+'''
 if __name__=="__main__":
 
     # TODO: add list command
@@ -801,5 +806,6 @@ if __name__=="__main__":
     args = parser.parse_args(rospy.myargv(argv=sys.argv)[1:])
 
     rospy.init_node("soma_roi")
-    rospy.loginfo("Running SOMA ROI (conf: %s, types: %s)", args.conf[0], args.t)
+    rospy.loginfo("Running SOMA ROI Manager (conf: %s, types: %s)", args.conf[0], args.t)
     SOMAROIManager(args.conf[0],args.t)
+'''
