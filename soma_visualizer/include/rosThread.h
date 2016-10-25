@@ -8,6 +8,7 @@
 #include <soma_msgs/SOMAObject.h>
 #include <soma_map_manager/MapInfo.h>
 #include <soma_msgs/SOMAROIObject.h>
+#include <soma_manager/SOMAQueryObjs.h>
 #include <soma_roi_manager/DrawROI.h>
 #include <algorithm>    // std::unique, std::distance
 #include <vector>       // std::vector
@@ -66,6 +67,9 @@ public:
 
      // Query the SOMA objects
      std::vector<soma_msgs::SOMAObject> querySOMAObjects(const mongo::BSONObj& queryobj);
+
+     std::vector<soma_msgs::SOMAObject> querySOMAObjects(soma_manager::SOMAQueryObjs &somaquery);
+
 
      // Set the DB name for SOMa objects
      void setSOMAObjectsDBName(std::string name);

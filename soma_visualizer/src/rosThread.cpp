@@ -207,11 +207,7 @@ void RosThread::shutdownROS()
 }
 void RosThread::fetchSOMAObjectTypesIDs()
 {
-    ros::NodeHandle nl;
 
-    mongodb_store::MessageStoreProxy somastore(nl,this->objectscollectionname,this->objectsdbname);
-
-    std::vector< soma_msgs::SOMAObject>   somaobjects;
     std::vector<std::string> somalabels;
 
     QString dir = QDir::homePath();
@@ -254,14 +250,6 @@ void RosThread::fetchSOMAObjectTypesIDs()
 
     }
 
-  /*  mongo::BSONObjBuilder builder;
-
-    builder.append("cloud",0);
-    builder.append("images",0);*/
-
-    // Query all objects,
-   // somastore.query(somaobjects,mongo::BSONObj(),mongo::BSONObj(),mongo::BSONObj(),builder.obj());
-
     soma_manager::SOMAQueryObjs queryobjs;
 
     queryobjs.request.query_type = 1;
@@ -274,15 +262,12 @@ void RosThread::fetchSOMAObjectTypesIDs()
         return;
     }
 
-
-
     // List that stores the object types
     QStringList typesls;
 
     // List that stores the object ids
     QStringList idsls;
 
-    nl.shutdown();
 
     // If we have any objects
     if(queryobjs.response.types.size()>0)
@@ -325,6 +310,12 @@ void RosThread::fetchSOMAObjectTypesIDs()
 
 
         }
+    }
+    else
+    {
+        file.close();
+        file2.close();
+        return;
     }
 
 
@@ -396,7 +387,6 @@ void RosThread::fetchSOMAROIs()
 
                 for(auto &roi:query_rois.response.rois)
                 {
-                    // res.push_back(roi->type.data());
                     SOMAROINameIDConfig roinameidconfig;
                     roinameidconfig.id = roi.id.data();
                     roinameidconfig.name = roi.type.data();
@@ -541,71 +531,8 @@ SOMATimeLimits RosThread::getSOMACollectionMinMaxTimelimits()
 
        limits.maxtimestamp = query_objs.response.timedatelimits[1];
 
-        ROS_INFO("Date limits %d %d",limits.mintimestamp,limits.maxtimestamp);
+        ROS_INFO("Date limits %ld %ld",limits.mintimestamp,limits.maxtimestamp);
     }
-
-
-
-    /* somaTimeLimits limits;
-    limits.mintimestamp = -1;
-    limits.mintimestep = -1;
-    limits.maxtimestamp = -1;
-    limits.maxtimestep = -1;
-
-    ros::NodeHandle nl;
-
-    mongodb_store::MessageStoreProxy somastore(nl,objectscollectionname,objectsdbname);
-
-    mongo::BSONObjBuilder builder;
-
-    builder.append("$natural",-1);
-
-    std::vector<boost::shared_ptr<soma_msgs::somaObject> > somaobjects;
-
-    somastore.query(somaobjects,mongo::BSONObj(),mongo::BSONObj(),builder.obj(),false);
-
-
-    if(somaobjects.size() > 0)
-    {
-        int maxindex = 0;
-        long max = 0;
-        int minindex = 0;
-        long min = 10000000000;
-        for(int i = 0; i < somaobjects.size(); i++)
-        {
-            if(max < somaobjects[i]->logtimestamp){
-                max = somaobjects[i]->logtimestamp;
-                maxindex = i;
-            }
-
-            if(min > somaobjects[i]->logtimestamp)
-            {
-                min = somaobjects[i]->logtimestamp;
-                minindex = i;
-            }
-
-        }
-
-
-        limits.maxtimestep = somaobjects[maxindex]->timestep;
-        limits.maxtimestamp = somaobjects[maxindex]->logtimestamp;
-
-        limits.mintimestamp = min;
-        limits.mintimestep = somaobjects[minindex]->timestep;
-    }
-    //std::cout<<somaobjects[0]->timestep<<std::endl;
-
-   /* somaobjects.clear();
-    somastore.query(somaobjects,mongo::BSONObj(),mongo::BSONObj(),mongo::BSONObj(),false,1);
-
-    if(somaobjects.size() > 0)
-    {
-
-
-      //  limits.mintimestep = somaobjects[0]->timestep;
-       // limits.mintimestamp = somaobjects[0]->logtimestamp;
-    }*/
-
 
 
     return limits;
@@ -617,51 +544,7 @@ void RosThread::publishSOMAObjectCloud(sensor_msgs::PointCloud2 msg)
 
 
 }
-/*std::vector<soma_msgs::somaObject> RosThread::querysomaObjectsWithDate(const mongo::BSONObj &queryobj)
-{
 
-    ros::NodeHandle nl;
-    mongodb_store::MessageStoreProxy somastore(nl,this->objectscollectionname,this->objectsdbname);
-
-    std::vector<soma_msgs::somaObject> res;
-
-
-    mongo::BSONObjBuilder builder;
-
-
-    builder.appendElements(queryobj);
-
-
-    std::vector<boost::shared_ptr<soma_msgs::somaObject> > somaobjects;
-
-
-    mongo::BSONObj builderobj = builder.obj();
-
-    somastore.query(somaobjects,builderobj);
-
-
-  //  qDebug()<<QString::fromStdString(builderobj.jsonString());
-
-
-    if(somaobjects.size() > 0)
-    {
-        for(auto &labelled_object:somaobjects)
-        {
-            res.push_back(*labelled_object);
-        }
-
-    }
-
-
-    qDebug()<<"Query returned"<<res.size()<<"objects";
-
-    // std::cout<<QUERY("\"geoloc\""<<stdstr).obj.toString()<<std::endl;
-
-    //  std::cout<< BSON("geoloc"<<stdstr).jsonString();
-
-    return res;
-
-}*/
 std::vector<soma_msgs::SOMAObject> RosThread::querySOMAObjects(const mongo::BSONObj &queryobj)
 {
 
@@ -698,4 +581,16 @@ std::vector<soma_msgs::SOMAObject> RosThread::querySOMAObjects(const mongo::BSON
 
 
 }
+std::vector<soma_msgs::SOMAObject> RosThread::querySOMAObjects(soma_manager::SOMAQueryObjs& somaquery)
+{
+  //  ros::NodeHandle nl;
+
+  //  ros::ServiceClient client = nl.serviceClient("soma/query_objects");
+
+    this->object_query_client.call(somaquery);
+
+    return somaquery.response.objects;
+
+}
+
 

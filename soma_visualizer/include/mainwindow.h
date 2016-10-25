@@ -5,6 +5,16 @@
 #include <QThread>
 #include <QFile>
 #include <QDir>
+#include <QDebug>
+#include <QDialog>
+#include <QTextBrowser>
+#include <QStringListModel>
+#include <QLineEdit>
+#include <QRegExpValidator>
+#include <QSlider>
+#include <QDateTime>
+#include <QDateEdit>
+#include <QLabel>
 #include "rosThread.h"
 #include "querybuilder.h"
 
@@ -23,6 +33,8 @@ public:
 
     void setMongoDBHostName(std::string hostname);
     void setMongoDBPort(std::string port);
+
+    QDateTime calculateDateTimeFromTimestamp(long timestamp);
 
 signals:
     void sliderValue(int val);
@@ -52,6 +64,11 @@ private slots:
 
     void on_lineEditTimeStepIntervalMinutes_editingFinished();
 
+    void on_lineEditTimeStepIntervalHours_editingFinished();
+
+
+    void on_lineEditTimeStepIntervalDay_editingFinished();
+
 private:
     Ui::MainWindow *ui;
 
@@ -61,6 +78,11 @@ private:
     std::vector<SOMAROINameIDConfig> roinameidconfigs;
     mongo::BSONObj mainBSONObj;
     QString lastqueryjson;
+    int timestep;
+    SOMATimeLimits timelimits;
+    QString datetimeformat;
+    void calculateSliderLimits(long lowertimestamp, long uppertimestamp);
+    void calculateDateIntervalforTimestep(int step);
    // std::string mongodbhost;
    // std::string mongodbport;
 };

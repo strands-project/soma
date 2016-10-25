@@ -129,6 +129,9 @@
               <height>50</height>
              </size>
             </property>
+            <property name="minimum">
+             <number>1</number>
+            </property>
             <property name="orientation">
              <enum>Qt::Horizontal</enum>
             </property>
@@ -199,12 +202,12 @@
              <widget class="QLabel" name="label_4">
               <property name="minimumSize">
                <size>
-                <width>35</width>
+                <width>85</width>
                 <height>20</height>
                </size>
               </property>
               <property name="text">
-               <string>Date:</string>
+               <string>Date Interval:</string>
               </property>
              </widget>
             </item>
@@ -212,7 +215,7 @@
              <widget class="QLabel" name="datelabel">
               <property name="minimumSize">
                <size>
-                <width>150</width>
+                <width>220</width>
                 <height>20</height>
                </size>
               </property>
@@ -223,19 +226,6 @@
                <set>Qt::AlignCenter</set>
               </property>
              </widget>
-            </item>
-            <item>
-             <spacer name="horizontalSpacer_2">
-              <property name="orientation">
-               <enum>Qt::Horizontal</enum>
-              </property>
-              <property name="sizeHint" stdset="0">
-               <size>
-                <width>40</width>
-                <height>20</height>
-               </size>
-              </property>
-             </spacer>
             </item>
            </layout>
           </widget>
@@ -270,7 +260,7 @@
               </size>
              </property>
              <property name="text">
-              <string>Day:</string>
+              <string>Days:</string>
              </property>
             </widget>
             <widget class="QLineEdit" name="lineEditTimeStepIntervalDay">
@@ -735,7 +725,7 @@
      <x>0</x>
      <y>0</y>
      <width>619</width>
-     <height>25</height>
+     <height>20</height>
     </rect>
    </property>
   </widget>

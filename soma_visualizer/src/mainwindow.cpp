@@ -1,9 +1,6 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
-#include <QDebug>
-#include <QDialog>
-#include <QTextBrowser>
-#include <QStringListModel>
+
 
 
 MainWindow::MainWindow(QWidget *parent) :
@@ -14,10 +11,9 @@ MainWindow::MainWindow(QWidget *parent) :
 
     ui->mapnamelabel->setText("DB Fetch is in progress...");
 
-    this->setWindowTitle("Robot State Viewer");
+    this->setWindowTitle("SOMA Visualizer");
 
-    // this->mongodbhost = "localhost";
-    // this->mongodbport = "62345";
+    this->datetimeformat = "dd-MM-yyyy hh:mm";
 
     ui->tab->setEnabled(false);
 
@@ -70,9 +66,34 @@ void MainWindow::on_timestepSlider_valueChanged(int value)
 
         ui->timesteplabel->setText(labeltext);
 
-        std::string date = rosthread.getSOMAObjectDateWithTimestep(value-1);
+        soma_manager::SOMAQueryObjs query;
 
-        ui->datelabel->setText(QString::fromStdString(date));
+
+        query.request.usedates = true;
+        query.request.lowerdate = (this->timelimits.mintimestamp+(value-1)*this->timestep)*1000;
+        query.request.upperdate = (this->timelimits.mintimestamp+(value)*this->timestep)*1000;
+
+        this->calculateDateIntervalforTimestep(value);
+
+       /* QDateTime dtlower = this->calculateDateTimeFromTimestamp(query.request.lowerdate);
+        QDateTime dtupper = this->calculateDateTimeFromTimestamp(query.request.upperdate);
+
+        QString str = dtlower.toString(this->datetimeformat);
+
+        str +=" - ";
+        str+= dtupper.toString(this->datetimeformat);
+
+        ui->datelabel->setText(str);*/
+
+        std::vector<soma_msgs::SOMAObject > somaobjects =  rosthread.querySOMAObjects(query);
+
+        sensor_msgs::PointCloud2 state =  rosthread.getSOMACombinedObjectCloud(somaobjects);
+
+        rosthread.publishSOMAObjectCloud(state);
+
+        //std::string date = rosthread.getSOMAObjectDateWithTimestep(value-1);
+
+       // ui->datelabel->setText(QString::fromStdString(date));
 
 
         // bool lowerdate = ui->lowerDateCBox->isChecked();
@@ -100,7 +121,7 @@ void MainWindow::on_timestepSlider_valueChanged(int value)
         }*/
 
 
-        mongo::BSONObjBuilder builder;
+      /*  mongo::BSONObjBuilder builder;
 
 
         builder.appendElements(this->mainBSONObj);
@@ -118,16 +139,79 @@ void MainWindow::on_timestepSlider_valueChanged(int value)
 
         sensor_msgs::PointCloud2 state =  rosthread.getSOMACombinedObjectCloud(somaobjects);
 
-        rosthread.publishSOMAObjectCloud(state);
+        rosthread.publishSOMAObjectCloud(state);*/
 
 
-        lastqueryjson = QString::fromStdString(tempObject.jsonString());
+        lastqueryjson = QString::fromStdString(query.response.queryjson);
         //Reset the bson obj
         // mongo::BSONObjBuilder mainbuilder;
 
         // this->mainBSONObj = mainbuilder.obj();
 
     }
+}
+QDateTime MainWindow::calculateDateTimeFromTimestamp(long timestamp)
+{
+    QDateTime dt = QDateTime::fromMSecsSinceEpoch(timestamp,Qt::UTC);
+
+    return dt;
+
+}
+void MainWindow::calculateSliderLimits(long lowertimestamp, long uppertimestamp)
+{
+    long timestepdiff = uppertimestamp-lowertimestamp;
+
+
+
+
+    int daysec = ui->lineEditTimeStepIntervalDay->text().toInt()*24*60*60;
+    int hoursec = ui->lineEditTimeStepIntervalHours->text().toInt()*60*60;
+    int minsec = ui->lineEditTimeStepIntervalMinutes->text().toInt()*60;
+
+
+
+    this->timestep = daysec + hoursec + minsec;
+
+    if(this->timestep == 0)
+    {
+        ui->lineEditTimeStepIntervalHours->setText("12");
+        this->timestep = ui->lineEditTimeStepIntervalHours->text().toInt()*60*60;
+    }
+
+    double interval = (double)timestepdiff/this->timestep;
+
+    this->maxtimestep = round(interval);
+
+    ui->timestepSlider->setMaximum(this->maxtimestep);
+
+
+
+    QString labeltext ;
+    labeltext.append(QString::number(1));
+    labeltext.append(" / ");
+    labeltext.append(QString::number(this->maxtimestep+1));
+
+    ui->timesteplabel->setText(labeltext);
+
+    ui->timestepSlider->setValue(1);
+}
+void MainWindow::calculateDateIntervalforTimestep(int step)
+{
+
+    long lowertimestamp = (this->timelimits.mintimestamp+(step-1)*this->timestep)*1000;
+    long uppertimestamp = (this->timelimits.mintimestamp+(step)*this->timestep)*1000;
+
+
+    QDateTime dtlower = this->calculateDateTimeFromTimestamp(lowertimestamp);
+    QDateTime dtupper = this->calculateDateTimeFromTimestamp(uppertimestamp);
+
+    QString str = dtlower.toString(this->datetimeformat);
+
+    str +=" - ";
+    str+= dtupper.toString(this->datetimeformat);
+
+    ui->datelabel->setText(str);
+
 }
 
 void MainWindow::handleMapInfoReceived()
@@ -147,37 +231,32 @@ void MainWindow::handleMapInfoReceived()
 
 
     /***********************Set Timestep Interval *************************************/
-    std::string objectsdbname = this->rosthread.getSOMAObjectsDBName();
-
-    std::string objectscolname = this->rosthread.getSOMAObjectsCollectionName();
-
-    // MongoDBCXXInterface mongointerface(this->mongodbhost,this->mongodbport,objectsdbname,objectscolname);
-
-    //std::vector<int> minmax = this->rosthread.getSOMA2CollectionMinMaxTimestep();
-
     SOMATimeLimits res = this->rosthread.getSOMACollectionMinMaxTimelimits();
 
-
-   // this->mintimestep = res.mintimestep;
-   // this->maxtimestep = res.maxtimestep;
+    this->timelimits = res;
 
     qint64 val = res.mintimestamp*1000;
-    QDateTime dt = QDateTime::fromMSecsSinceEpoch(val,Qt::UTC);
+    QDateTime dt = this->calculateDateTimeFromTimestamp(val);
     ui->lowerDateEdit->setDate(dt.date());
+    ui->lowerDateEdit->setDisplayFormat("dd-MM-yyyy");
 
     val = res.maxtimestamp*1000;
-    dt = QDateTime::fromMSecsSinceEpoch(val,Qt::UTC);
+    dt = this->calculateDateTimeFromTimestamp(val);
     ui->upperDateEdit->setDate(dt.date());
+    ui->upperDateEdit->setDisplayFormat("dd-MM-yyyy");
+
+    ui->lineEditTimeStepIntervalDay->setText("0");
+    ui->lineEditTimeStepIntervalDay->setValidator(new QIntValidator(0,30));
+
+    ui->lineEditTimeStepIntervalHours->setText("12");
+    ui->lineEditTimeStepIntervalHours->setValidator(new QIntValidator(0,23));
+
+    ui->lineEditTimeStepIntervalMinutes->setText("0");
+    ui->lineEditTimeStepIntervalMinutes->setValidator(new QIntValidator(0,59));
+
+    this->calculateSliderLimits(res.mintimestamp,res.maxtimestamp);
 
 
-    QString labeltext ;
-   // labeltext.append(QString::number(this->mintimestep+1));
-   // labeltext.append(" / ");
-    // QString labeltext =  "1 / ";
-
-   // labeltext.append(QString::number(this->maxtimestep+1));
-
-    ui->timesteplabel->setText(labeltext);
 
    // ui->timestepSlider->setMaximum(maxtimestep+1);
    // ui->timestepSlider->setMinimum(this->mintimestep+1);
@@ -218,6 +297,24 @@ void MainWindow::handleMapInfoReceived()
 
     // Clear any remaining ROI's in the RVIZ
     rosthread.drawROIwithID("-1");
+
+
+    soma_manager::SOMAQueryObjs query;
+
+    query.request.usedates = true;
+    query.request.lowerdate = (res.mintimestamp+(ui->timestepSlider->value()-1)*this->timestep)*1000;
+    query.request.upperdate = (res.mintimestamp+(ui->timestepSlider->value())*this->timestep)*1000;
+
+    this->calculateDateIntervalforTimestep(1);
+
+
+    std::vector<soma_msgs::SOMAObject > somaobjects =  rosthread.querySOMAObjects(query);
+
+    sensor_msgs::PointCloud2 state =  rosthread.getSOMACombinedObjectCloud(somaobjects);
+
+    rosthread.publishSOMAObjectCloud(state);
+
+
 
 
     /********************* Publish Objects at world state t = 0 ***********************/
@@ -730,5 +827,27 @@ void MainWindow::on_lowerDateCBox_clicked(bool checked)
 
 void MainWindow::on_lineEditTimeStepIntervalMinutes_editingFinished()
 {
+
+
+    this->calculateSliderLimits(this->timelimits.mintimestamp,this->timelimits.maxtimestamp);
+
+    this->calculateDateIntervalforTimestep(1);
+
+}
+
+void MainWindow::on_lineEditTimeStepIntervalHours_editingFinished()
+{
+    this->calculateSliderLimits(this->timelimits.mintimestamp,this->timelimits.maxtimestamp);
+
+    this->calculateDateIntervalforTimestep(1);
+
+
+}
+
+void MainWindow::on_lineEditTimeStepIntervalDay_editingFinished()
+{
+    this->calculateSliderLimits(this->timelimits.mintimestamp,this->timelimits.maxtimestamp);
+
+    this->calculateDateIntervalforTimestep(1);
 
 }
