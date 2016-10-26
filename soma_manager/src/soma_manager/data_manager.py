@@ -62,7 +62,7 @@ class SOMADataManager():
     def _init_map(self):
         print "Waiting for the map info from soma_map_manager"
         try:
-            rospy.wait_for_service('soma/map_info', timeout = 5)
+            rospy.wait_for_service('soma/map_info', timeout = 30)
             rospy.loginfo("SOMA map info received...")
         except:
             rospy.logerr("No 'soma/map_info' service, Quitting...")
