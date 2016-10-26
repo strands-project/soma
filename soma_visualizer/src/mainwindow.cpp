@@ -62,7 +62,7 @@ void MainWindow::on_timestepSlider_valueChanged(int value)
 
         QString labeltext =  QString::number(value);
 
-        labeltext.append(" / ").append(QString::number(maxtimestep+1));
+        labeltext.append(" / ").append(QString::number(maxtimestep));
 
         ui->timesteplabel->setText(labeltext);
 
@@ -91,62 +91,11 @@ void MainWindow::on_timestepSlider_valueChanged(int value)
 
         rosthread.publishSOMAObjectCloud(state);
 
-        //std::string date = rosthread.getSOMAObjectDateWithTimestep(value-1);
-
-       // ui->datelabel->setText(QString::fromStdString(date));
-
-
-        // bool lowerdate = ui->lowerDateCBox->isChecked();
-
-        // bool upperdate = ui->upperDateCBox->isChecked();
-
-        /*    if(lowerdate || upperdate)
-        {
-            std::vector<soma2_msgs::SOMA2Object> soma2objects =  rosthread.querySOMA2ObjectsWithDate(this->mainBSONObj);
-
-            ui->noretrievedobjectslabel->setText(QString::number(soma2objects.size()));
-
-            sensor_msgs::PointCloud2 state =  rosthread.getSOMA2CombinedObjectCloud(soma2objects);
-
-            rosthread.publishSOMA2ObjectCloud(state);
-
-            lastqueryjson = QString::fromStdString(this->mainBSONObj.jsonString(mongo::TenGen,0 ));
-            //Reset the bson obj
-            mongo::BSONObjBuilder mainbuilder;
-
-            this->mainBSONObj = mainbuilder.obj();
-
-            return;
-
-        }*/
-
-
-      /*  mongo::BSONObjBuilder builder;
-
-
-        builder.appendElements(this->mainBSONObj);
-
-        mongo::BSONObj timestepobj = QueryBuilder::buildSOMA2TimestepQuery(value-1);
-
-        builder.appendElements(timestepobj);
-        //builder.append("timestep",value-1);
-
-        mongo::BSONObj tempObject = builder.obj();
-
-        std::vector< soma_msgs::SOMAObject > somaobjects =  rosthread.querySOMAObjects(tempObject);
-
         ui->noretrievedobjectslabel->setText(QString::number(somaobjects.size()));
 
-        sensor_msgs::PointCloud2 state =  rosthread.getSOMACombinedObjectCloud(somaobjects);
-
-        rosthread.publishSOMAObjectCloud(state);*/
 
 
         lastqueryjson = QString::fromStdString(query.response.queryjson);
-        //Reset the bson obj
-        // mongo::BSONObjBuilder mainbuilder;
-
-        // this->mainBSONObj = mainbuilder.obj();
 
     }
 }
@@ -189,7 +138,7 @@ void MainWindow::calculateSliderLimits(long lowertimestamp, long uppertimestamp)
     QString labeltext ;
     labeltext.append(QString::number(1));
     labeltext.append(" / ");
-    labeltext.append(QString::number(this->maxtimestep+1));
+    labeltext.append(QString::number(this->maxtimestep));
 
     ui->timesteplabel->setText(labeltext);
 
@@ -258,29 +207,6 @@ void MainWindow::handleMapInfoReceived()
 
 
 
-   // ui->timestepSlider->setMaximum(maxtimestep+1);
-   // ui->timestepSlider->setMinimum(this->mintimestep+1);
-    /**********************************************************************************/
-
-
-
-
-    /****************************** Set Dates to Min/Max Values **********************/
- /*   std::string date = rosthread.getSOMA2ObjectDateWithTimestep(this->mintimestep);
-
-    QDateTime qdate = QDateTime::fromString(QString::fromStdString(date),Qt::ISODate);
-
-   // ui->lowerDateEdit->setDate(qdate.date());
-
-    ui->datelabel->setText(QString::fromStdString(date));
-
-    date = rosthread.getSOMA2ObjectDateWithTimestep(maxtimestep);
-
-    qdate = QDateTime::fromString(QString::fromStdString(date),Qt::ISODate);
-
-    ui->upperDateEdit->setDate(qdate.date());*/
-    /*********************************************************************************/
-
     /********************** Prepare the Weekdays ComboBox ****************************/
     QStringList weekdays;
     weekdays.push_back("");
@@ -314,23 +240,8 @@ void MainWindow::handleMapInfoReceived()
 
     rosthread.publishSOMAObjectCloud(state);
 
+    ui->noretrievedobjectslabel->setText(QString::number(somaobjects.size()));
 
-
-
-    /********************* Publish Objects at world state t = 0 ***********************/
-
-    //  std::vector<std::string>  res =  RosThread::fetchSOMA2ObjectLabels();
-
-    /*  std::vector<soma2_msgs::SOMA2Object > soma2objects =  rosthread.querySOMA2Objects(this->mainBSONObj,0);
-
-    ui->noretrievedobjectslabel->setText(QString::number(soma2objects.size()));
-
-    sensor_msgs::PointCloud2 state =  rosthread.getSOMA2CombinedObjectCloud(soma2objects);
-
-    rosthread.publishSOMA2ObjectCloud(state);*/
-
-
-    /**********************************************************************************/
 
 
 }
@@ -849,5 +760,17 @@ void MainWindow::on_lineEditTimeStepIntervalDay_editingFinished()
     this->calculateSliderLimits(this->timelimits.mintimestamp,this->timelimits.maxtimestamp);
 
     this->calculateDateIntervalforTimestep(1);
+
+}
+
+void MainWindow::on_sliderLastButton_clicked()
+{
+    ui->timestepSlider->setValue(ui->timestepSlider->maximum());
+
+}
+
+void MainWindow::on_sliderFirstButton_clicked()
+{
+     ui->timestepSlider->setValue(ui->timestepSlider->minimum());
 
 }

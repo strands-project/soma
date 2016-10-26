@@ -69,6 +69,10 @@ private slots:
 
     void on_lineEditTimeStepIntervalDay_editingFinished();
 
+    void on_sliderLastButton_clicked();
+
+    void on_sliderFirstButton_clicked();
+
 private:
     Ui::MainWindow *ui;
 
