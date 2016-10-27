@@ -17,11 +17,11 @@ if __name__=="__main__":
     rospy.init_node("soma_data_manager")
     if args.object_db_name is not None:
         if args.object_collection_name is not None:
-           rospy.loginfo("Running SOMA data manager (object dbname: %s, object collection_name: %s)", args.object_db_name, args.object_collection_name)
+           rospy.loginfo("Running SOMA Data Manager (object db: %s, object collection: %s)", args.object_db_name, args.object_collection_name)
            SOMADataManager(args.object_db_name,args.object_collection_name)
         else:
-            rospy.loginfo("Running SOMA data manager (object dbname: %s, object collection_name: object)", args.object_db_name)
+            rospy.loginfo("Running SOMA Data Manager (object db: %s, object collection: object)", args.object_db_name)
             SOMADataManager(args.object_db_name)
     else:
-        rospy.loginfo("Running SOMA data manager (object dbname: somadata, object collection_name: object)")
+        rospy.loginfo("Running SOMA Data Manager (object db: somadata, object collection: object)")
         SOMADataManager()

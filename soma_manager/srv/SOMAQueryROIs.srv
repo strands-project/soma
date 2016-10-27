@@ -7,6 +7,7 @@ bool useuppertime   ### use upper time limit as a query field
 bool usedates	    ### use dates as a query field. If the upper or lower date is 0, it is ignored.
 bool useweekday     ### use weekday as a query field
 
+bool returnmostrecent ### this flag should be set to true if you want to get the most recent versions of the rois
 
 uint32 lowerhour     ### lower limit of the hour
 

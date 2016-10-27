@@ -335,7 +335,7 @@ std::vector<std::pair< boost::shared_ptr<soma_msgs::SOMAObject>, mongo::BSONObj>
     }*/
 
 
-    ROS_INFO("Query returned %d objects",somaobjectsmetas.size());
+    ROS_INFO("Query returned %u objects",(unsigned int)somaobjectsmetas.size());
 
     return somaobjectsmetas;
 
@@ -371,7 +371,7 @@ std::vector<soma_msgs::SOMAROIObject> querySOMAROIs(const mongo::BSONObj &queryo
     }
 
 
-    ROS_INFO("Query returned %d rois",(int)res.size());
+
 
     return res;
 
@@ -823,8 +823,82 @@ bool handleROIQueryRequests(soma_manager::SOMAQueryROIsRequest & req, soma_manag
 
             std::vector< soma_msgs::SOMAROIObject > roiobjects =  querySOMAROIs(tempObject);
 
+            if(req.returnmostrecent)
+            {
+
+                /*** Getting the object configurations and ids *******/
+                QStringList idlist;
+                QStringList configlist;
+
+
+                for(int i  = 0; i < roiobjects.size(); i++)
+                {
+                    idlist.push_back(QString::fromStdString(roiobjects[i].id));
+                    configlist.push_back(QString::fromStdString(roiobjects[i].config));
+
+
+                }
+                /*****************************************************/
+
+                /**** Remove the duplicates ****/
+                idlist.removeDuplicates();
+                configlist.removeDuplicates();
+                /*******************************/
+
+                std::vector< soma_msgs::SOMAROIObject > mostrecentroiobjects;
+
+                foreach(QString config,configlist)
+                {
+
+                    foreach(QString id,idlist)
+                    {
+                        int maxtimestamp = 0;
+                        int maxid = -1;
+
+                        int count = 0;
+
+                        for(int i  = 0; i < roiobjects.size(); i++)
+                        {
+                            soma_msgs::SOMAROIObject obj = roiobjects[i];
+                            if(obj.id == id.toStdString() && obj.config == config.toStdString())
+                            {
+                                if(obj.logtimestamp > maxtimestamp)
+                                {
+                                    maxid = i;
+                                    maxtimestamp = obj.logtimestamp;
+                                }
+                            }
+
+
+                        }
+
+                        if(maxid >=0)
+                        {
+                            mostrecentroiobjects.push_back(roiobjects[maxid]);
+
+                          //  roiobjects.erase(std::remove(roiobjects.begin(), roiobjects.end(), maxid), roiobjects.end());
+
+                        }
+
+
+                    }
+                }
+
+
+                resp.rois = mostrecentroiobjects;
+                resp.queryjson = tempObject.jsonString();
+
+                ROS_INFO("Query returned %d rois",(int)resp.rois.size());
+
+                return true;
+
+
+            }
+
             resp.rois = roiobjects;
             resp.queryjson = tempObject.jsonString();
+
+            ROS_INFO("Query returned %d rois",(int)resp.rois.size());
 
         }
 
@@ -866,9 +940,7 @@ int main(int argc, char **argv){
                     "Running the SOMA query_manager_node with default arguments: ObjectsDB: somadata, ObjectsCollection: object, ROIDB: somadata, ROICollection: roi"
                     );
 
-        // std::cout << "Not enough input arguments!! Quitting..."<<std::endl;
 
-        //  return -1;
 
     }
     else
@@ -895,23 +967,25 @@ int main(int argc, char **argv){
 
     ros::ServiceClient client = n.serviceClient<soma_map_manager::MapInfo>("soma/map_info");
 
-    ROS_INFO("Waiting for SOMA Map Service...");
+    ROS_INFO("SOMA Query Service is waiting for SOMA Map Service...");
 
     while(!client.exists() && ros::ok());
 
     if(!ros::ok())
-        return 0;
+        return -1;
 
     soma_map_manager::MapInfo srv;
 
     client.call(srv);
-    ROS_INFO("Received map info. Map Name: %s, Map Unique ID: %s",srv.response.map_name.data(),srv.response.map_unique_id.data());
+  //  ROS_INFO("Received map info. Map Name: %s, Map Unique ID: %s",srv.response.map_name.data(),srv.response.map_unique_id.data());
+
 
     map_name = srv.response.map_name;
 
     ros::ServiceServer serviceobject = n.advertiseService("soma/query_objects", handleObjectQueryRequests);
     ros::ServiceServer serviceroi = n.advertiseService("soma/query_rois", handleROIQueryRequests);
-    ROS_INFO("SOMA Query Service Ready.");
+
+    ROS_INFO("Running SOMA Query Service (objects db: %s, objects collection: %s, ROI db: %s, ROI collection: %s)",objectsdbname.data(),objectscollectionname.data(),roidbname.data(),roiscollectionname.data());
 
     ros::spin();
 

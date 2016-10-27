@@ -379,6 +379,8 @@ void RosThread::fetchSOMAROIs()
 
     query_rois.request.query_type = SOMA_QUERY_ROIS;
 
+    query_rois.request.returnmostrecent = true;
+
     if(this->roi_query_client.call(query_rois))
     {
         if(query_rois.response.rois.size() > 0)

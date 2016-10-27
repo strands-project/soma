@@ -180,8 +180,8 @@ class SOMAROIManager():
         # Add minimum 3 vertices for a valid ROI
         pose = copy.deepcopy(feedback.pose)
 
-        pose.position.x +=0.5
-        pose.position.y +=0.5
+        pose.position.x +=1.0
+        pose.position.y +=1.0
 
         self.add_roi(self.menu_item[feedback.menu_entry_id], pose)
         latest_soma_roi = self._soma_obj_msg[str(self._soma_id)]
@@ -336,7 +336,7 @@ class SOMAROIManager():
         ''' Get the latest state of each roi  '''
         for i in uniqueids:
             objs = self._msg_store.query(SOMAROIObject._type, message_query={"map_name": self.soma_map_name, "config":self.soma_conf, "id":i},sort_query=[("logtimestamp",-1)])
-            
+
             if objs:
                 returnedobjs.append(objs[0][0])
                 returnedmetas.append(objs[0][1])
@@ -485,15 +485,15 @@ class SOMAROIManager():
 
             for i in range(2,4):
                 p = Pose()
-                p.position.x = anchor_pose.position.x + 0.5*i
-                p.position.y = anchor_pose.position.y + 0.5*i
+                p.position.x = anchor_pose.position.x + 1.0*i*math.cos(math.radians(90*i))
+                p.position.y = anchor_pose.position.y + 1.0*i*math.cos(math.radians(45*i))
                 self.load_object(str(soma_id),soma_type,p)
                 self._soma_obj_pose[soma_obj.id][str(i)] = p
                 soma_obj.posearray.poses.append(p)
-            
+
             # If we have at least 3 vertices add geojson part and a new object
             if len(soma_obj.posearray.poses) >=3:
-                self.insert_geo_json(soma_obj)
+
                 try:
 			_id = self._msg_store.insert(soma_obj)
 			self._soma_obj_ids[soma_obj.id] = _id
@@ -530,9 +530,6 @@ class SOMAROIManager():
 
             soma_obj.posearray.poses = self.sort_marker_positions(self._soma_obj_pose[soma_obj.id])
 
-            # If we have at least 3 vertices add geojson part and a new object
-            if len(soma_obj.posearray.poses) >=3:
-                self.insert_geo_json(soma_obj)
 
             self.insert_soma_time_fields(soma_obj)
 
@@ -554,54 +551,6 @@ class SOMAROIManager():
             return
 
 
-    def insert_geo_json(self,soma_obj):
-
-        geo_json = self.geo_json_from_soma_obj(soma_obj)
-        if geo_json != None:
-            soma_obj.geotype = geo_json['loc']['type']
-            soma_obj.geoposearray = geo_json['loc']['coordinates']
-        else:
-            soma_obj.geotype = ''
-            soma_obj.geoposearray = PoseArray()
-
-    def geo_json_from_soma_obj(self, soma_obj):
-
-        geo_json = {}
-        geo_json['soma_id'] = soma_obj.id
-        geo_json['soma_map_name'] = soma_obj.map_name
-        geo_json['soma_config'] = soma_obj.config
-        geo_json['type'] = soma_obj.type
-
-
-        if len(self._soma_obj_pose[soma_obj.id]) < 3:
-            rospy.logerr("GS Store: %s %s, less then 3 points => Add more points or delete ROI." % (soma_obj.type, soma_obj.id) )
-            return None
-        coordinates = PoseArray()
-
-        pointkeys = self._soma_obj_pose[soma_obj.id].keys()
-
-        pointkeys.sort(key=int)
-
-
-        for akey in pointkeys:
-            pose = self._soma_obj_pose[soma_obj.id][akey]
-            p = copy.deepcopy(pose)
-            res = coords_to_lnglat(p.position.x, p.position.y)
-            p.position.x = res[0]
-            p.position.y = res[1]
-            coordinates.poses.append(p)
-
-        p = copy.deepcopy(self._soma_obj_pose[soma_obj.id][pointkeys[0]])
-
-        res = coords_to_lnglat(p.position.x, p.position.y)
-        p.position.x = res[0]
-        p.position.y = res[1]
-        coordinates.poses.append(p)
-
-
-        geo_json['loc'] = {'type': 'Polygon',
-                           'coordinates': coordinates}
-        return geo_json
 
     def insert_soma_time_fields(self,soma_obj,timestamp=None):
 
@@ -633,6 +582,9 @@ class SOMAROIManager():
 
         if(should_delete_roi):
             try:
+                '''If we have a update timer associated with the roi, cancel it'''
+                if hasattr(self, "vp_timer_"+soma_id):
+                    getattr(self, "vp_timer_"+soma_id).cancel()
                 # Get all the history object with 'id'
                 res = self._msg_store.query(SOMAROIObject._type,message_query={'id':str(soma_id)})
                 #iterate through the objects. Delete all the history
@@ -658,10 +610,10 @@ class SOMAROIManager():
 
         new_msg.posearray.poses = self.sort_marker_positions(self._soma_obj_pose[str(soma_id)])
 
-        self.insert_geo_json(new_msg)
+
 
         try:
-            #self._msg_store.update_id(_id,new_msg)
+
             _id = self._msg_store.insert(new_msg)
 
             self._soma_obj_ids[new_msg.id] = _id
@@ -684,13 +636,18 @@ class SOMAROIManager():
 
         new_msg.posearray.poses = self.sort_marker_positions(self._soma_obj_pose[roi])
 
-        self.insert_geo_json(new_msg)
         self.insert_soma_time_fields(new_msg)
-        try:
-            #self._msg_store.update_id(_id, new_msg)
-            _id = self._msg_store.insert(new_msg)
 
-            self._soma_obj_ids[new_msg.id] = _id
+        try:
+            ## if this is the first time the region has been modified, we have a timeout period of 90 seconds before inserting a new version of the roi
+            res = self._msg_store.query(SOMAROIObject._type,message_query={'id':str(roi)})
+    
+            if(len(res) == 1):
+                if(int(rospy.get_rostime().to_sec()) & 0xffffffff-res[0][0].logtimestamp <= 90):
+                    self._msg_store.update_id(_id, new_msg)
+            else:
+                _id = self._msg_store.insert(new_msg)
+                self._soma_obj_ids[new_msg.id] = _id
             rospy.loginfo("ROI %s updated successfully" %(roi))
         except:
             rospy.logerr("Error updating ROI %s" %(roi))
@@ -791,21 +748,3 @@ class SOMAROIManager():
         p.y = pose.position.y - int_marker.pose.position.y
         marker.points.append(p)
         return int_marker
-
-'''
-if __name__=="__main__":
-
-    # TODO: add list command
-
-    parser = argparse.ArgumentParser(prog='soma_roi.py')
-    #parser.add_argument("map", nargs=1, help='Path of the used 2D map')
-    #parser.add_argument("map_name",nargs=1, help='Name of the used 2D map')
-    parser.add_argument("conf", nargs=1, help='Name of the object configuration')
-    parser.add_argument('-t', metavar='config-file')
-
-    args = parser.parse_args(rospy.myargv(argv=sys.argv)[1:])
-
-    rospy.init_node("soma_roi")
-    rospy.loginfo("Running SOMA ROI Manager (conf: %s, types: %s)", args.conf[0], args.t)
-    SOMAROIManager(args.conf[0],args.t)
-'''

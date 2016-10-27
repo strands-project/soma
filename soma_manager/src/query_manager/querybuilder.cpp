@@ -24,11 +24,11 @@ mongo::BSONObj QueryBuilder::buildSOMALabelContainsQuery(const std::string &text
 }
 mongo::BSONObj QueryBuilder::buildSOMAConfigQuery(const std::string &text)
 {
-     mongo::BSONObjBuilder builder;
+    mongo::BSONObjBuilder builder;
 
-     builder.append("config",text);
+    builder.append("config",text);
 
-     return builder.obj();
+    return builder.obj();
 
 }
 mongo::BSONObj QueryBuilder::buildSOMADateQuery(unsigned long lowerdate, unsigned long upperdate, int mode)
@@ -71,11 +71,10 @@ mongo::BSONObj QueryBuilder::buildSOMADateQuery(unsigned long lowerdate, unsigne
 
     }
 
-    //  qDebug()<<QString::fromStdString(builder.obj().jsonString());
 
     builder2.append("timestamp",builder.obj());
+    return builder2.obj();
 
-    // obj<<"timestamp"<<builder.ob();
 
 
     return builder2.obj();
