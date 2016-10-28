@@ -319,20 +319,7 @@ std::vector<std::pair< boost::shared_ptr<soma_msgs::SOMAObject>, mongo::BSONObj>
     std::vector<boost::shared_ptr<soma_msgs::SOMAObject> > somaobjects;
 
 
-   // somastore.query(somaobjects,queryobj);
-
     somastore.query(somaobjectsmetas,queryobj);
-
-
-  /*  if(somaobjects.size() > 0)
-    {
-        for(auto &object:somaobjects)
-        {
-            res.push_back(*object);
-            //qDebug()<<labelled_object.use_count;
-        }
-
-    }*/
 
 
     ROS_INFO("Query returned %u objects",(unsigned int)somaobjectsmetas.size());
@@ -341,7 +328,7 @@ std::vector<std::pair< boost::shared_ptr<soma_msgs::SOMAObject>, mongo::BSONObj>
 
 
 }
-std::vector<soma_msgs::SOMAROIObject> querySOMAROIs(const mongo::BSONObj &queryobj)
+std::vector<std::pair< boost::shared_ptr<soma_msgs::SOMAROIObject>, mongo::BSONObj> > querySOMAROIs(const mongo::BSONObj &queryobj)
 {
 
     ros::NodeHandle nl;
@@ -352,15 +339,14 @@ std::vector<soma_msgs::SOMAROIObject> querySOMAROIs(const mongo::BSONObj &queryo
     std::vector<soma_msgs::SOMAROIObject> res;
 
 
+    std::vector<std::pair< boost::shared_ptr<soma_msgs::SOMAROIObject>, mongo::BSONObj> > somaroismetas;
 
-    std::vector<boost::shared_ptr<soma_msgs::SOMAROIObject> > somarois;
+    //std::vector<boost::shared_ptr<soma_msgs::SOMAROIObject> > somarois;
+
+     somastore.query(somaroismetas,queryobj);
 
 
-
-     somastore.query(somarois,queryobj);
-
-
-    if(somarois.size() > 0)
+   /* if(somarois.size() > 0)
     {
         for(auto &roi:somarois)
         {
@@ -368,12 +354,12 @@ std::vector<soma_msgs::SOMAROIObject> querySOMAROIs(const mongo::BSONObj &queryo
             //qDebug()<<labelled_object.use_count;
         }
 
-    }
+    }*/
 
 
 
 
-    return res;
+    return somaroismetas;
 
 
 }
@@ -821,7 +807,16 @@ bool handleROIQueryRequests(soma_manager::SOMAQueryROIsRequest & req, soma_manag
 
             // qDebug()<<QString::fromStdString(tempObject.jsonString());
 
-            std::vector< soma_msgs::SOMAROIObject > roiobjects =  querySOMAROIs(tempObject);
+            std::vector<std::pair< boost::shared_ptr<soma_msgs::SOMAROIObject>, mongo::BSONObj> > result = querySOMAROIs(tempObject);
+
+            std::vector<soma_msgs::SOMAROIObject > roiobjects;
+
+            for(int i = 0; i < result.size(); i++)
+            {
+                roiobjects.push_back(*result[i].first);
+
+            }
+
 
             if(req.returnmostrecent)
             {
@@ -831,7 +826,7 @@ bool handleROIQueryRequests(soma_manager::SOMAQueryROIsRequest & req, soma_manag
                 QStringList configlist;
 
 
-                for(int i  = 0; i < roiobjects.size(); i++)
+                for(int i  = 0; i < result.size(); i++)
                 {
                     idlist.push_back(QString::fromStdString(roiobjects[i].id));
                     configlist.push_back(QString::fromStdString(roiobjects[i].config));
@@ -846,6 +841,8 @@ bool handleROIQueryRequests(soma_manager::SOMAQueryROIsRequest & req, soma_manag
                 /*******************************/
 
                 std::vector< soma_msgs::SOMAROIObject > mostrecentroiobjects;
+                std::vector< std::string > unique_ids;
+
 
                 foreach(QString config,configlist)
                 {
@@ -875,6 +872,18 @@ bool handleROIQueryRequests(soma_manager::SOMAQueryROIsRequest & req, soma_manag
                         if(maxid >=0)
                         {
                             mostrecentroiobjects.push_back(roiobjects[maxid]);
+
+                            mongo::BSONObj obj = result[maxid].second;
+                            mongo::BSONElement _idelement = obj.getField("_id");
+
+                            std::string _id = _idelement.toString(false);
+
+                            /*** Removing the ObjectId(...) part from the unique id.
+                             * Only the part within the paranthesis is important for us***/
+                            _id.erase(_id.begin(),_id.begin()+10);
+                            _id.erase(_id.end()-2,_id.end());
+                            /**********************************************************/
+                            resp.unique_ids.push_back(_id);
 
                           //  roiobjects.erase(std::remove(roiobjects.begin(), roiobjects.end(), maxid), roiobjects.end());
 

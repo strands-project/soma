@@ -32,6 +32,8 @@ string[] configs           ### vector of roi configs present in current collecti
 
 string[] ids		   ### vector of roi ids present in current collection
 
+string[] unique_ids        ### vector of mongo unique ids of objects
+
 soma_msgs/SOMAROIObject[] rois  ### vector of returned rois
 
 string queryjson 	   ### performed query in json format

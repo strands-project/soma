@@ -14,6 +14,7 @@ find_package(catkin REQUIRED COMPONENTS
   nav_msgs
   std_msgs
   message_generation
+  soma_manager
 )
 
 ## System dependencies are found with CMake's conventions
