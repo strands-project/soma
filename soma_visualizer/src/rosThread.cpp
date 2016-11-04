@@ -563,7 +563,7 @@ std::vector<soma_msgs::SOMAObject> RosThread::querySOMAObjects(const mongo::BSON
 
 
 
-    somastore.query(somaobjects,queryobj,mongo::BSONObj(),mongo::BSONObj(),mongo::BSONObj(),false,30);
+    somastore.query(somaobjects,queryobj,mongo::BSONObj(),mongo::BSONObj(),false,30);
 
 
     if(somaobjects.size() > 0)

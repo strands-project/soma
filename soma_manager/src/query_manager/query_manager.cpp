@@ -161,7 +161,7 @@ void fetchSOMAObjectTypesIDs(std::vector<std::string>& types, std::vector<std::s
     projectionbuilder.append("images",0);
 
 
-    somastore.query(somaobjects,mongo::BSONObj(),mongo::BSONObj(),mongo::BSONObj(),projectionbuilder.obj(),false,0);
+    somastore.queryWithProjection(somaobjects,mongo::BSONObj(),mongo::BSONObj(),mongo::BSONObj(),projectionbuilder.obj(),false,0);
 
     // List that stores the object types
     QStringList typesls;
@@ -284,7 +284,7 @@ SOMATimeLimits getSOMACollectionTimeLimits()
     projectionbuilder.append("images",0);
 
 
-    somastore.query(somaobjects,mongo::BSONObj(),mongo::BSONObj(),mongo::BSONObj(),projectionbuilder.obj(),false,0);
+    somastore.queryWithProjection(somaobjects,mongo::BSONObj(),mongo::BSONObj(),mongo::BSONObj(),projectionbuilder.obj(),false,0);
 
     if(somaobjects.size() > 0)
     {
