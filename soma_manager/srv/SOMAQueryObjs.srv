@@ -8,16 +8,16 @@ bool uselowertime   ### use lower time limit as a query field
 bool useuppertime   ### use upper time limit as a query field
 bool usedates	    ### use dates as a query field. If the upper or lower date is 0, it is ignored.
 bool useweekday     ### use weekday as a query field
-bool useroi	    ### use roi as a query field
+bool useroi_id	    ### use roi_id as a query field. If set to true, custom_roi array will be ignored
 
 
-uint32 lowerhour     ### lower limit of the hour
+uint32 lowerhour     ### lower limit of the hour in the interval[0-23]
 
-uint32 upperhour     ### upper limit of the hour
+uint32 upperhour     ### upper limit of the hour in the interval [0-23]
 
-uint32 lowerminutes  ### lower limit of minutes
+uint32 lowerminutes  ### lower limit of minutes in the interval [0-59]
 
-uint32 upperminutes  ### upper limit of minutes
+uint32 upperminutes  ### upper limit of minutes in the interval [0-59]
 
 uint64 lowerdate     ### lower date in timestamp format
 
@@ -31,7 +31,9 @@ string[] objecttypes ### array of object types that will be queried with or stat
 
 string roi_id        ### id of the roi that will be used for within query
 
-string config		   ### retrieve objects with specific configuration
+string config        ### retrieve objects with specific configuration
+
+float32[] custom_roi   ### user defined custom roi with 4 vertices The element order should be -> [x_lower,x_upper,y_lower,y_upper].  
 
 
 ---

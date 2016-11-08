@@ -25,6 +25,17 @@ struct SOMATimeLimits{
 
 };
 
+std::vector<double>  coordsToLngLat(double x, double y){
+       std::vector<double> res;
+       double earth_radius = 6371000.0; // in meters
+       double lng = 90 - acos(float(x) / earth_radius)*180/M_PI;
+       double lat = 90 - acos(float(y) / earth_radius)*180/M_PI ;
+       res.push_back(lng);
+       res.push_back(lat);
+       return res;
+}
+
+
 void fetchSOMAROIConfigsIDs(std::vector<std::string>& configs, std::vector<std::string>& ids)
 {
 
@@ -418,7 +429,7 @@ bool handleObjectQueryRequests(soma_manager::SOMAQueryObjsRequest & req, soma_ma
         }
 
         // If roi is used
-        if(req.useroi)
+        if(req.useroi_id)
         {
 
             ros::NodeHandle nl;
@@ -568,6 +579,52 @@ bool handleObjectQueryRequests(soma_manager::SOMAQueryObjsRequest & req, soma_ma
             mongo::BSONObj bsonobj = QueryBuilder::buildSOMAConfigQuery(req.config);
 
             mainbuilder.appendElements(bsonobj);
+
+        }
+        if(!req.useroi_id && req.custom_roi.size() == 4)
+        {
+            soma_msgs::SOMAROIObject roiobj;
+
+            geometry_msgs::Pose apose ;
+
+            std::vector<double> res = coordsToLngLat(req.custom_roi[0],req.custom_roi[2]);
+
+            apose.position.x = res[0]; //xlower
+            apose.position.y = res[1]; //ylower
+
+            roiobj.geoposearray.poses.push_back(apose);
+
+            res = coordsToLngLat(req.custom_roi[0],req.custom_roi[3]);
+
+            apose.position.x = res[0]; //xlower
+            apose.position.y = res[1]; //yupper
+
+            roiobj.geoposearray.poses.push_back(apose);
+
+
+             res = coordsToLngLat(req.custom_roi[1],req.custom_roi[3]);
+
+
+            apose.position.x = res[0]; //xupper
+            apose.position.y = res[1]; //yupper
+
+             roiobj.geoposearray.poses.push_back(apose);
+
+             res = coordsToLngLat(req.custom_roi[1],req.custom_roi[2]);
+
+
+            apose.position.x = res[0]; //xupper
+            apose.position.y = res[1]; //ylower
+
+            roiobj.geoposearray.poses.push_back(apose);
+            roiobj.geoposearray.poses.push_back( roiobj.geoposearray.poses[0]); // close the loop
+
+             mongo::BSONObj bsonobj = QueryBuilder::buildSOMAROIWithinQuery(roiobj);
+
+             mainbuilder.appendElements(bsonobj);
+
+
+
 
         }
 
