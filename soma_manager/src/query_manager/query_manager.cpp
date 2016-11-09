@@ -35,6 +35,17 @@ std::vector<double>  coordsToLngLat(double x, double y){
        return res;
 }
 
+bool is_only_ascii_whitespace( const std::string& str )
+{
+    auto it = str.begin();
+    do {
+        if (it == str.end()) return true;
+    } while (*it >= 0 && *it <= 0x7f && std::isspace(*(it++)));
+             // one of these conditions will be optimized away by the compiler,
+             // which one depends on whether char is signed or not
+    return false;
+}
+
 
 void fetchSOMAROIConfigsIDs(std::vector<std::string>& configs, std::vector<std::string>& ids)
 {
@@ -314,7 +325,7 @@ SOMATimeLimits getSOMACollectionTimeLimits()
     return limits;
 
 }
-std::vector<std::pair< boost::shared_ptr<soma_msgs::SOMAObject>, mongo::BSONObj> > querySOMAObjects(const mongo::BSONObj &queryobj)
+std::vector<std::pair< boost::shared_ptr<soma_msgs::SOMAObject>, mongo::BSONObj> > querySOMAObjects(const mongo::BSONObj &queryobj, int limit=0)
 {
 
     ros::NodeHandle nl;
@@ -322,18 +333,12 @@ std::vector<std::pair< boost::shared_ptr<soma_msgs::SOMAObject>, mongo::BSONObj>
     mongodb_store::MessageStoreProxy somastore(nl,objectscollectionname,objectsdbname);
 
 
-    std::vector<soma_msgs::SOMAObject> res;
-
     std::vector<std::pair< boost::shared_ptr<soma_msgs::SOMAObject>, mongo::BSONObj> > somaobjectsmetas;
 
-
-    std::vector<boost::shared_ptr<soma_msgs::SOMAObject> > somaobjects;
-
-
-    somastore.query(somaobjectsmetas,queryobj);
+    somastore.query(somaobjectsmetas,queryobj,mongo::BSONObj(),mongo::BSONObj(),false,true,limit);
 
 
-    ROS_INFO("Query returned %u objects",(unsigned int)somaobjectsmetas.size());
+
 
     return somaobjectsmetas;
 
@@ -469,11 +474,12 @@ bool handleObjectQueryRequests(soma_manager::SOMAQueryObjsRequest & req, soma_ma
 
         }
         // If object ids and/or types are used
-        if(req.objectids.size()>0 || req.objecttypes.size() > 0)
+        if((req.objectids.size()>0 || req.objecttypes.size()) > 0 && ( !is_only_ascii_whitespace(req.objectids[0]) || !is_only_ascii_whitespace(req.objecttypes[0])))
         {
-            if(req.objectids.size() > 0 && req.objecttypes.size() > 0)
+            if(req.objectids.size() > 0 && req.objecttypes.size() > 0  )
             {
-                //  qDebug()<<req.objectids.size()<<req.objecttypes.size();
+                //std::cout<<req.objectids.size()<<" "<<req.objecttypes.size()<<" "<<req.objectids[0].data()<<" "<<req.objecttypes[0].data();
+                //if()
                 if(req.objectids[0] != "" && req.objecttypes[0] != "")
                 {
 
@@ -637,7 +643,46 @@ bool handleObjectQueryRequests(soma_manager::SOMAQueryObjsRequest & req, soma_ma
 
            // std::vector< soma_msgs::SOMAObject > somaobjects =  querySOMAObjects(tempObject);
 
-            std::vector<std::pair< boost::shared_ptr<soma_msgs::SOMAObject>, mongo::BSONObj> > somaobjectsmetas = querySOMAObjects(tempObject);
+            mongo::BSONObjBuilder projectionbuilder;
+
+            projectionbuilder.append("cloud",0);
+            projectionbuilder.append("images",0);
+
+
+            std::vector<std::pair< boost::shared_ptr<soma_msgs::SOMAObject>, mongo::BSONObj> > tempsomaobjectsmetas;
+
+            std::vector<std::pair< boost::shared_ptr<soma_msgs::SOMAObject>, mongo::BSONObj> > somaobjectsmetas;
+
+            ros::NodeHandle nl;
+
+            mongodb_store::MessageStoreProxy somastore(nl,objectscollectionname,objectsdbname);
+
+            somastore.queryWithProjection(tempsomaobjectsmetas,tempObject,mongo::BSONObj(),mongo::BSONObj(),projectionbuilder.obj());
+
+           // std::cout<<"Objects size "<<tempsomaobjects.size();
+
+
+            if(tempsomaobjectsmetas.size() > 30)
+            {
+                  somaobjectsmetas = querySOMAObjects(tempObject,30);
+
+                  std::vector<std::pair< boost::shared_ptr<soma_msgs::SOMAObject>, mongo::BSONObj> >(tempsomaobjectsmetas.begin()+30, tempsomaobjectsmetas.end()).swap(tempsomaobjectsmetas);
+
+                  somaobjectsmetas.insert(somaobjectsmetas.end(),tempsomaobjectsmetas.begin(),tempsomaobjectsmetas.end());
+
+                  ROS_WARN("Query returned %u objects. Only first 30 objects have cloud,image information",(unsigned int)somaobjectsmetas.size());
+
+
+            }
+            else
+            {
+                  somaobjectsmetas = querySOMAObjects(tempObject);
+                  ROS_INFO("Query returned %u objects.",(unsigned int)somaobjectsmetas.size());
+
+            }
+
+
+          //  std::vector<std::pair< boost::shared_ptr<soma_msgs::SOMAObject>, mongo::BSONObj> > somaobjectsmetas = querySOMAObjects(tempObject);
 
             for(size_t i = 0; i < somaobjectsmetas.size(); i++)
             {
@@ -655,6 +700,7 @@ bool handleObjectQueryRequests(soma_manager::SOMAQueryObjsRequest & req, soma_ma
                 resp.unique_ids.push_back(_id);
 
             }
+
 
             resp.queryjson = tempObject.jsonString();
 
@@ -954,7 +1000,7 @@ bool handleROIQueryRequests(soma_manager::SOMAQueryROIsRequest & req, soma_manag
                 resp.rois = mostrecentroiobjects;
                 resp.queryjson = tempObject.jsonString();
 
-                ROS_INFO("Query returned %d rois",(int)resp.rois.size());
+
 
                 return true;
 
