@@ -29,7 +29,7 @@ By default, the SOMA data are stored in `somadata` database. The collections und
 
 SOMA map manager
 ----------------
-3. SOMA is based on the assumption that all the data are with respect to 2D global map frame. So **it is mandatory to publish a 2D map using SOMA map manager** before using SOMA. This node is used for storing, reading and publishing 2D map:
+3. SOMA is based on the assumption that all the data are with respect to 2D global map frame. So it is **mandatory to publish a 2D map using SOMA map manager** before using SOMA. This node is used for storing, reading and publishing 2D map:
 ```
 $ rosrun soma_map_manager soma_map_manager_node.py --mapname <map_name>
 ```
@@ -71,14 +71,33 @@ The other nodes can communicate with SOMA using the SOMA service calls. In order
 ## SOMA data manager
 1. Run the soma data manager:
 ```
-$ rosrun soma_manager data_manager.py <db_name> <collection_name>
+$ rosrun soma_manager data_manager_node.py
+--object_collection_name <collection_name> --object_db_name <db_name>
 ```
 The parameters `db_name` and `collection_name` are optional which can be used to define the database and collection name for data storage.
-### Data insertion
+
+## SOMA query manager
+1. Run the soma query manager:
+```
+$ rosrun soma_query_manager query_manager_node
+<object_db_name> <object_collection_name> <roi_db_name> <roi_collection_name>
+```
+
+By default the data is stored under default db and collections :
+
+|                 |  object  |    ROI   |    map   |
+|:---------------:|:--------:|:--------:|:--------:|
+|     db_name     | somadata | somadata | somadata |
+| collection_name |  object  |    roi   |    map   |
+
+
+### Object insertion
 One or multiple SOMA objects can be inserted using the SOMA service call `/soma/insert_objects`. The unique mongodb ids and a boolean value are returned. The boolean return value determines whether the request was successfully completed or not.
-### Data deletion
+### Object deletion
 One or multiple SOMA objects can be deleted using the SOMA service call `/soma/delete_objects`. The SOMA object ids are used for deletion. The boolean return value determines whether the request was successfully completed or not.
-### Data update
+### Object update
 A SOMA object can be updated using the SOMA service call `/soma/update_object`. The boolean return value determines whether the request was successfully completed or not.
-### Data query
-SOMA objects and ROIs could be queried using SOMA service call `/soma/query_db`. The query request should be filled according to the spatio-temporal constraints. The results are returned based on the query type and constraints.
+### Object query
+SOMA objects could be queried using SOMA service call `/soma/query_objects`. The query request should be filled according to the spatio-temporal constraints. The results are returned based on the query type and constraints.
+### ROI query
+SOMA ROIs could be queried using SOMA service call `/soma/query_rois`. The query request should be filled according to the spatio-temporal constraints. The results are returned based on the query type and constraints.
