@@ -373,7 +373,7 @@ class SOMAROIManager():
         # Otherwise, load all object from collection
         for o,om  in objs:
 #
-            print om
+            #print om
             self._soma_obj_ids[o.id] = om
 
             self._soma_obj_msg[o.id] = o
@@ -626,19 +626,29 @@ class SOMAROIManager():
         new_msg.posearray.poses = self.sort_marker_positions(self._soma_obj_pose[str(soma_id)])
 
         self.insert_geo_poses(new_msg)
-
+        self.insert_soma_time_fields(new_msg)
         try:
+            ## if this is the first time the region has been modified, we have a timeout period of 90 seconds before inserting a new version of the roi
+            res = self._msg_store.query(SOMAROIObject._type,message_query={'id':str(soma_id),'config':self.soma_conf})
+
+            if(len(res) == 1):
+                val =  (int(rospy.get_rostime().to_sec()) & 0xffffffff)-res[0][0].logtimestamp
+
+                if(val <= 90):
+                    self._msg_store.update_id(_id, new_msg)
+                    return
 
             _id = self._msg_store.insert(new_msg)
 
             self._soma_obj_ids[new_msg.id] = _id
+            rospy.loginfo("Marker %s updated successfully" %(marker_name))
+            self._server.erase(marker_name)
+            self._server.applyChanges()
         except:
             rospy.logerr("Error deleting Marker %s." % (marker_name) )
-            return
 
 
-        self._server.erase(marker_name)
-        self._server.applyChanges()
+
 
 
     def update_object(self, roi):
@@ -659,13 +669,13 @@ class SOMAROIManager():
 
             if(len(res) == 1):
                 val =  (int(rospy.get_rostime().to_sec()) & 0xffffffff)-res[0][0].logtimestamp
-                print val
+                #print val
                 if(val <= 90):
                     self._msg_store.update_id(_id, new_msg)
                     return
 
             _id = self._msg_store.insert(new_msg)
-            print _id
+            #print _id
             self._soma_obj_ids[new_msg.id] = _id
             rospy.loginfo("ROI %s updated successfully" %(roi))
         except:
