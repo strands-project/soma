@@ -53,9 +53,6 @@ public:
      // Publish SOMA combined Object Cloud
      void publishSOMAObjectCloud(sensor_msgs::PointCloud2 msg);
 
-     // Return the log date of the object at timestep t
-     std::string getSOMAObjectDateWithTimestep(int timestep);
-
      // Return the name of the current map
      std::string getMapName();
 
@@ -69,6 +66,8 @@ public:
      std::vector<soma_msgs::SOMAObject> querySOMAObjects(const mongo::BSONObj& queryobj);
 
      std::vector<soma_msgs::SOMAObject> querySOMAObjects(soma_manager::SOMAQueryObjs &somaquery);
+
+     void fetchDataFromDB();
 
 
      // Set the DB name for SOMa objects
@@ -91,7 +90,6 @@ public:
 
      // Get the time limits of SOMa objects
      SOMATimeLimits getSOMACollectionMinMaxTimelimits();
-
 
      std::string getSOMAROIDBName();
 

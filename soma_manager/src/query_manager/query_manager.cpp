@@ -474,7 +474,7 @@ bool handleObjectQueryRequests(soma_manager::SOMAQueryObjsRequest & req, soma_ma
 
         }
         // If object ids and/or types are used
-        if((req.objectids.size()>0 || req.objecttypes.size()) > 0 && ( !is_only_ascii_whitespace(req.objectids[0]) || !is_only_ascii_whitespace(req.objecttypes[0])))
+        if((req.objectids.size()>0 &&  !is_only_ascii_whitespace(req.objectids[0])) ||( req.objecttypes.size() > 0  && !is_only_ascii_whitespace(req.objecttypes[0])))
         {
             if(req.objectids.size() > 0 && req.objecttypes.size() > 0  )
             {

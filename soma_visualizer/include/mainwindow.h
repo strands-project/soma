@@ -87,6 +87,7 @@ private:
     QString datetimeformat;
     void calculateSliderLimits(long lowertimestamp, long uppertimestamp);
     void calculateDateIntervalforTimestep(int step);
+    void setupUI();
    // std::string mongodbhost;
    // std::string mongodbport;
 };
