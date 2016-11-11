@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>619</width>
-    <height>651</height>
+    <height>857</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -676,6 +676,16 @@
            </widget>
           </item>
          </layout>
+        </item>
+        <item>
+         <widget class="QTableView" name="tableViewSomaObjects">
+          <property name="minimumSize">
+           <size>
+            <width>0</width>
+            <height>200</height>
+           </size>
+          </property>
+         </widget>
         </item>
         <item>
          <layout class="QHBoxLayout" name="horizontalLayout_6">

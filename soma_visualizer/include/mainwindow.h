@@ -14,6 +14,9 @@
 #include <QSlider>
 #include <QDateTime>
 #include <QDateEdit>
+#include <QListView>
+#include <QTableView>
+#include <QHeaderView>
 #include <QLabel>
 #include "rosThread.h"
 #include "querybuilder.h"
@@ -66,12 +69,13 @@ private slots:
 
     void on_lineEditTimeStepIntervalHours_editingFinished();
 
-
     void on_lineEditTimeStepIntervalDay_editingFinished();
 
     void on_sliderLastButton_clicked();
 
     void on_sliderFirstButton_clicked();
+
+    void on_tableViewSomaObjects_doubleClicked(const QModelIndex &index);
 
 private:
     Ui::MainWindow *ui;
@@ -84,12 +88,11 @@ private:
     QString lastqueryjson;
     int timestep;
     SOMATimeLimits timelimits;
-    QString datetimeformat;
+
     void calculateSliderLimits(long lowertimestamp, long uppertimestamp);
     void calculateDateIntervalforTimestep(int step);
     void setupUI();
-   // std::string mongodbhost;
-   // std::string mongodbport;
+
 };
 
 #endif // MAINWINDOW_H

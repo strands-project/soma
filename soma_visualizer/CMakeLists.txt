@@ -41,7 +41,7 @@ INCLUDE(FindPkgConfig)
 #INCLUDE(${QT_USE_FILE})
 #ADD_DEFINITIONS(${QT_DEFINITIONS})
 
-SET(qo_HEADERS include/mainwindow.h include/rosThread.h )
+SET(qo_HEADERS include/mainwindow.h include/rosThread.h include/somaobjecttableviewmodel.h )
 SET(qt_FORMS ui/mainwindow.ui)
 file(GLOB soma_visualizer_SOURCES src/*.cpp )
 
@@ -179,7 +179,7 @@ add_custom_target(headers SOURCES ${LibFilesSOMAVISUALIZER})
 #link_directories(${LIBMONGOCXX_LIBRARY_DIRS} ${LIBBSONCXX_LIBRARY_DIRS})
 
 ## Declare a C++ executable
-add_executable(soma_visualizer_node src/main.cpp ${soma_visualizer_SOURCES} ${qo_HEADERS_MOC} ${uis_h} include/querybuilder.h)
+add_executable(soma_visualizer_node src/main.cpp ${soma_visualizer_SOURCES} ${qo_HEADERS_MOC} ${uis_h} include/querybuilder.h  include/util.h)
 
 qt5_use_modules(soma_visualizer_node Widgets Core)
 

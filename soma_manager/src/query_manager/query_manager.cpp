@@ -662,15 +662,15 @@ bool handleObjectQueryRequests(soma_manager::SOMAQueryObjsRequest & req, soma_ma
            // std::cout<<"Objects size "<<tempsomaobjects.size();
 
 
-            if(tempsomaobjectsmetas.size() > 30)
+            if(tempsomaobjectsmetas.size() > 50)
             {
-                  somaobjectsmetas = querySOMAObjects(tempObject,30);
+                  somaobjectsmetas = querySOMAObjects(tempObject,50);
 
-                  std::vector<std::pair< boost::shared_ptr<soma_msgs::SOMAObject>, mongo::BSONObj> >(tempsomaobjectsmetas.begin()+30, tempsomaobjectsmetas.end()).swap(tempsomaobjectsmetas);
+                  std::vector<std::pair< boost::shared_ptr<soma_msgs::SOMAObject>, mongo::BSONObj> >(tempsomaobjectsmetas.begin()+50, tempsomaobjectsmetas.end()).swap(tempsomaobjectsmetas);
 
                   somaobjectsmetas.insert(somaobjectsmetas.end(),tempsomaobjectsmetas.begin(),tempsomaobjectsmetas.end());
 
-                  ROS_WARN("Query returned %u objects. Only first 30 objects have cloud,image information",(unsigned int)somaobjectsmetas.size());
+                  ROS_WARN("Query returned %u objects. Cloud,image information of first 50 objects have been fetched",(unsigned int)somaobjectsmetas.size());
 
 
             }

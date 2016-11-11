@@ -1,7 +1,7 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
-
-
+#include "somaobjecttableviewmodel.h"
+#include "util.h"
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -42,12 +42,13 @@ void MainWindow::setupUI()
 
     this->setWindowTitle("SOMA Visualizer");
 
-    this->datetimeformat = "dd-MM-yyyy hh:mm";
-
     ui->tab->setEnabled(false);
 
     // We will wait for the map information
     ui->timestepSlider->setEnabled(false);
+
+    ui->tableViewSomaObjects->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+
 
 
 }
@@ -101,19 +102,29 @@ void MainWindow::on_timestepSlider_valueChanged(int value)
 
         ui->noretrievedobjectslabel->setText(QString::number(somaobjects.size()));
 
+        SomaObjectTableViewModel* mod = new SomaObjectTableViewModel(this);
+        mod->setSOMAObjects(somaobjects);
+
+        ui->tableViewSomaObjects->setModel(mod);
+
+        ui->tableViewSomaObjects->setSelectionBehavior(QTableView::SelectRows);
+
+
+
+       // ui->tableViewSomaObjects->resizeColumnsToContents();
 
 
         lastqueryjson = QString::fromStdString(query.response.queryjson);
 
     }
 }
-QDateTime MainWindow::calculateDateTimeFromTimestamp(long timestamp)
+/*QDateTime MainWindow::calculateDateTimeFromTimestamp(long timestamp)
 {
     QDateTime dt = QDateTime::fromMSecsSinceEpoch(timestamp,Qt::UTC);
 
     return dt;
 
-}
+}*/
 void MainWindow::calculateSliderLimits(long lowertimestamp, long uppertimestamp)
 {
     long timestepdiff = uppertimestamp-lowertimestamp;
@@ -159,13 +170,13 @@ void MainWindow::calculateDateIntervalforTimestep(int step)
     long uppertimestamp = (this->timelimits.mintimestamp+(step)*this->timestep)*1000;
 
 
-    QDateTime dtlower = this->calculateDateTimeFromTimestamp(lowertimestamp);
-    QDateTime dtupper = this->calculateDateTimeFromTimestamp(uppertimestamp);
+    QDateTime dtlower = calculateUTCDateTimeFromTimestamp(lowertimestamp);
+    QDateTime dtupper = calculateUTCDateTimeFromTimestamp(uppertimestamp);
 
-    QString str = dtlower.toString(this->datetimeformat);
+    QString str = dtlower.toString(datetimeformat);
 
     str +=" - ";
-    str+= dtupper.toString(this->datetimeformat);
+    str+= dtupper.toString(datetimeformat);
 
     ui->datelabel->setText(str);
 
@@ -192,23 +203,35 @@ void MainWindow::handleMapInfoReceived()
 
     this->timelimits = res;
 
+    long timeDifference = this->timelimits.maxtimestamp - this->timelimits.mintimestamp;
+
+    long interval = timeDifference/5;
+
+    int min = interval/60;
+
+    if(min > 59) min = 0;
+
+    int hours = interval/(60*60);
+
+    if(hours > 23) hours = 12;
+
     qint64 val = res.mintimestamp*1000;
-    QDateTime dt = this->calculateDateTimeFromTimestamp(val);
+    QDateTime dt = calculateUTCDateTimeFromTimestamp(val);
     ui->lowerDateEdit->setDate(dt.date());
     ui->lowerDateEdit->setDisplayFormat("dd-MM-yyyy");
 
     val = res.maxtimestamp*1000;
-    dt = this->calculateDateTimeFromTimestamp(val);
+    dt = calculateUTCDateTimeFromTimestamp(val);
     ui->upperDateEdit->setDate(dt.date());
     ui->upperDateEdit->setDisplayFormat("dd-MM-yyyy");
 
     ui->lineEditTimeStepIntervalDay->setText("0");
     ui->lineEditTimeStepIntervalDay->setValidator(new QIntValidator(0,30));
 
-    ui->lineEditTimeStepIntervalHours->setText("12");
+    ui->lineEditTimeStepIntervalHours->setText(QString::number(hours));
     ui->lineEditTimeStepIntervalHours->setValidator(new QIntValidator(0,23));
 
-    ui->lineEditTimeStepIntervalMinutes->setText("0");
+    ui->lineEditTimeStepIntervalMinutes->setText(QString::number(min));
     ui->lineEditTimeStepIntervalMinutes->setValidator(new QIntValidator(0,59));
 
     this->calculateSliderLimits(res.mintimestamp,res.maxtimestamp);
@@ -232,8 +255,11 @@ void MainWindow::handleMapInfoReceived()
     // Clear any remaining ROI's in the RVIZ
     rosthread.drawROIwithID("-1");
 
+    ui->timestepSlider->setValue(1);
+    emit ui->timestepSlider->valueChanged(1);
 
-    soma_manager::SOMAQueryObjs query;
+
+   /* soma_manager::SOMAQueryObjs query;
 
     query.request.usedates = true;
     query.request.lowerdate = (res.mintimestamp+(ui->timestepSlider->value()-1)*this->timestep)*1000;
@@ -251,7 +277,7 @@ void MainWindow::handleMapInfoReceived()
 
     ui->noretrievedobjectslabel->setText(QString::number(somaobjects.size()));
 
-    this->lastqueryjson = QString::fromStdString(query.response.queryjson);
+    this->lastqueryjson = QString::fromStdString(query.response.queryjson);*/
 
 
 
@@ -646,7 +672,13 @@ void MainWindow::on_resetqueryButton_clicked()
 
     ui->listViewObjectTypes->clearSelection();
 
+    QStringListModel* emptymodel =  new  QStringListModel(this);
+
+    ui->listViewObjectTypes->setModel(emptymodel);
+
     ui->listViewObjectIDs->clearSelection();
+
+    ui->listViewObjectIDs->setModel(emptymodel);
 
     this->lastqueryjson.clear();
 
@@ -769,5 +801,11 @@ void MainWindow::on_sliderLastButton_clicked()
 void MainWindow::on_sliderFirstButton_clicked()
 {
      ui->timestepSlider->setValue(ui->timestepSlider->minimum());
+
+}
+
+// TODO: Open the item detail viewer for displaying the object details and images
+void MainWindow::on_tableViewSomaObjects_doubleClicked(const QModelIndex &index)
+{
 
 }
