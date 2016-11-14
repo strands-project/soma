@@ -3,7 +3,7 @@
 	<arg name="host" default="192.168.1.10" />
         <arg name="use_localdatacenter" default="false" />
 	<arg name="map_name"/>
-	<arg name="db_name" default="somadata" />
+	<arg name="db_name" default="somadataTSC" />
         <arg name="object_collection_name" default="object"/>
         <arg name="roi_collection_name" default="roi"/>
 
