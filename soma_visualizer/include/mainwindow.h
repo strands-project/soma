@@ -19,7 +19,7 @@
 #include <QHeaderView>
 #include <QLabel>
 #include "rosThread.h"
-#include "querybuilder.h"
+#include "somaobjectdetaildialog.h"
 
 namespace Ui {
 class MainWindow;
@@ -83,10 +83,19 @@ private:
     QThread* thread;
     int maxtimestep;
     int mintimestep;
+
     std::vector<SOMAROINameIDConfig> roinameidconfigs;
+
+    std::vector<soma_msgs::SOMAObject> somaobjects;
+
+    soma_manager::SOMAQueryObjs objectquery;
+
     mongo::BSONObj mainBSONObj;
+
     QString lastqueryjson;
+
     int timestep;
+
     SOMATimeLimits timelimits;
 
     void calculateSliderLimits(long lowertimestamp, long uppertimestamp);

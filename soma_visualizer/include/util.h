@@ -5,16 +5,24 @@
 
 static QString datetimeformat = "dd-MM-yyyy hh:mm";
 
-
-
-static QDateTime calculateUTCDateTimeFromTimestamp(long timestamp)
+class Util
 {
-    QDateTime dt = QDateTime::fromMSecsSinceEpoch(timestamp,Qt::UTC);
-
-    return dt;
-
-}
+public:
 
 
+    static QDateTime calculateUTCDateTimeFromTimestamp(long timestamp)
+    {
+        QDateTime dt = QDateTime::fromMSecsSinceEpoch(timestamp,Qt::UTC);
+
+        return dt;
+
+    }
+
+    static long convertSecTimestamptoMSec(long timestamp)
+    {
+        return timestamp*1000;
+    }
+
+};
 
 #endif // UTIL_H

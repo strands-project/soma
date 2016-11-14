@@ -34,10 +34,9 @@ QVariant SomaObjectTableViewModel::data(const QModelIndex &index, int role) cons
     {
        // long uppertimestamp = (this->timelimits.mintimestamp+(step)*this->timestep)*1000;
 
-        long timestamp = this->somaobjects[index.row()].logtimestamp;
-        timestamp*=1000;
+        long timestamp = Util::convertSecTimestamptoMSec(this->somaobjects[index.row()].logtimestamp);
 
-        QDateTime dt = calculateUTCDateTimeFromTimestamp(timestamp);
+        QDateTime dt = Util::calculateUTCDateTimeFromTimestamp(timestamp);
 
         QString str = dt.toString(datetimeformat);
 

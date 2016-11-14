@@ -445,31 +445,29 @@ bool handleObjectQueryRequests(soma_manager::SOMAQueryObjsRequest & req, soma_ma
 
             builder.append("map_name",map_name);
 
+            builder.append("id",req.roi_id);
 
             std::vector<boost::shared_ptr<soma_msgs::SOMAROIObject> > rois;
 
+            mongo::BSONObjBuilder sortquerybuilder;
 
-            somastore.query(rois,builder.obj());
+            sortquerybuilder.append("logtimestamp",-1); // sort descending to get the most recent roi at index 0
+
+
+            somastore.query(rois,builder.obj(),mongo::BSONObj(),sortquerybuilder.obj());
 
             nl.shutdown();
 
-
-
-            for(int i  = 0;i < rois.size(); i++)
+            if(rois.size()> 0)
             {
-                soma_msgs::SOMAROIObject roi = *rois[i];
+                soma_msgs::SOMAROIObject roi = *rois[0]; // most recent roi
+                mongo::BSONObj bsonobj = QueryBuilder::buildSOMAROIWithinQuery(roi);
 
-                if(roi.id == req.roi_id)
-                {
-                    mongo::BSONObj bsonobj = QueryBuilder::buildSOMAROIWithinQuery(roi);
-
-                    mainbuilder.appendElements(bsonobj);
-
-                    break;
-
-                }
-
+                mainbuilder.appendElements(bsonobj);
             }
+
+
+
 
 
         }

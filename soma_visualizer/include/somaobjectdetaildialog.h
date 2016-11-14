@@ -2,12 +2,13 @@
 #define SOMAOBJECTDETAILDIALOG_H
 
 #include <QDialog>
-#include <rviz/visualization_manager.h>
-#include <rviz/render_panel.h>
-#include <rviz/display.h>
 #include <ros/ros.h>
-#include <QColor>
-
+#include <soma_msgs/SOMAObject.h>
+#include <QLabel>
+#include <QTextEdit>
+#include "util.h"
+#include "QImage"
+#include <cv_bridge/cv_bridge.h>
 namespace Ui {
 class SomaObjectDetailDialog;
 }
@@ -18,15 +19,22 @@ class SomaObjectDetailDialog : public QDialog
 
 public:
     explicit SomaObjectDetailDialog(QWidget *parent = 0);
+    SomaObjectDetailDialog(QWidget *parent = 0, soma_msgs::SOMAObject somaobject=soma_msgs::SOMAObject());
+
     ~SomaObjectDetailDialog();
+
+private slots:
+    void on_buttonImageLeft_clicked();
+
+    void on_buttonImageRight_clicked();
 
 private:
     Ui::SomaObjectDetailDialog *ui;
-    rviz::VisualizationManager* manager;
-    rviz::RenderPanel* renderpanel;
-    rviz::Display* grid;
+    soma_msgs::SOMAObject somaobject;
+    int imageIndex;
+    void loadImage();
 
-    //manager.createDisplay("rviz/PointCloud2","pointclouds")
+
 };
 
 #endif // SOMAOBJECTDETAILDIALOG_H

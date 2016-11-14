@@ -49,6 +49,15 @@ void MainWindow::setupUI()
 
     ui->tableViewSomaObjects->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
 
+    ui->tableViewSomaObjects->setSelectionBehavior(QTableView::SelectRows);
+
+
+    SomaObjectTableViewModel* mod = new SomaObjectTableViewModel(this);
+
+    ui->tableViewSomaObjects->setModel(mod);
+
+
+
 
 
 }
@@ -75,26 +84,15 @@ void MainWindow::on_timestepSlider_valueChanged(int value)
 
         ui->timesteplabel->setText(labeltext);
 
-        soma_manager::SOMAQueryObjs query;
-
-
-        query.request.usedates = true;
-        query.request.lowerdate = (this->timelimits.mintimestamp+(value-1)*this->timestep)*1000;
-        query.request.upperdate = (this->timelimits.mintimestamp+(value)*this->timestep)*1000;
+        //soma_manager::SOMAQueryObjs query;
+        this->objectquery.request.usedates = true;
+        this->objectquery.request.lowerdate = Util::convertSecTimestamptoMSec(this->timelimits.mintimestamp+(value-1)*this->timestep);
+        this->objectquery.request.upperdate = Util::convertSecTimestamptoMSec(this->timelimits.mintimestamp+(value)*this->timestep);
 
         this->calculateDateIntervalforTimestep(value);
 
-       /* QDateTime dtlower = this->calculateDateTimeFromTimestamp(query.request.lowerdate);
-        QDateTime dtupper = this->calculateDateTimeFromTimestamp(query.request.upperdate);
 
-        QString str = dtlower.toString(this->datetimeformat);
-
-        str +=" - ";
-        str+= dtupper.toString(this->datetimeformat);
-
-        ui->datelabel->setText(str);*/
-
-        std::vector<soma_msgs::SOMAObject > somaobjects =  rosthread.querySOMAObjects(query);
+        this->somaobjects =  rosthread.querySOMAObjects(this->objectquery);
 
         sensor_msgs::PointCloud2 state =  rosthread.getSOMACombinedObjectCloud(somaobjects);
 
@@ -107,14 +105,8 @@ void MainWindow::on_timestepSlider_valueChanged(int value)
 
         ui->tableViewSomaObjects->setModel(mod);
 
-        ui->tableViewSomaObjects->setSelectionBehavior(QTableView::SelectRows);
 
-
-
-       // ui->tableViewSomaObjects->resizeColumnsToContents();
-
-
-        lastqueryjson = QString::fromStdString(query.response.queryjson);
+        lastqueryjson = QString::fromStdString(this->objectquery.response.queryjson);
 
     }
 }
@@ -151,6 +143,7 @@ void MainWindow::calculateSliderLimits(long lowertimestamp, long uppertimestamp)
     this->maxtimestep = round(interval);
 
     ui->timestepSlider->setMaximum(this->maxtimestep);
+    ui->timestepSlider->setMinimum(1);
 
 
 
@@ -166,12 +159,12 @@ void MainWindow::calculateSliderLimits(long lowertimestamp, long uppertimestamp)
 void MainWindow::calculateDateIntervalforTimestep(int step)
 {
 
-    long lowertimestamp = (this->timelimits.mintimestamp+(step-1)*this->timestep)*1000;
-    long uppertimestamp = (this->timelimits.mintimestamp+(step)*this->timestep)*1000;
+    long lowertimestamp = Util::convertSecTimestamptoMSec(this->timelimits.mintimestamp+(step-1)*this->timestep);
+    long uppertimestamp = Util::convertSecTimestamptoMSec(this->timelimits.mintimestamp+(step)*this->timestep);
 
 
-    QDateTime dtlower = calculateUTCDateTimeFromTimestamp(lowertimestamp);
-    QDateTime dtupper = calculateUTCDateTimeFromTimestamp(uppertimestamp);
+    QDateTime dtlower = Util::calculateUTCDateTimeFromTimestamp(lowertimestamp);
+    QDateTime dtupper = Util::calculateUTCDateTimeFromTimestamp(uppertimestamp);
 
     QString str = dtlower.toString(datetimeformat);
 
@@ -185,10 +178,6 @@ void MainWindow::calculateDateIntervalforTimestep(int step)
 void MainWindow::handleMapInfoReceived()
 {
     ui->tab->setEnabled(true);
-
-    // Enable the slider
-    ui->timestepSlider->setEnabled(true);
-    ui->sliderCBox->setChecked(true);
 
 
     /*************Set Map Name***********************/
@@ -205,6 +194,19 @@ void MainWindow::handleMapInfoReceived()
 
     long timeDifference = this->timelimits.maxtimestamp - this->timelimits.mintimestamp;
 
+    // If both limits are equal then there is sth wrong we should return
+    if(timeDifference == 0)
+    {
+
+        ui->timestepSlider->setEnabled(false);
+
+        ROS_WARN("Time limits of the current object db cannot be determined. Please make sure the database is present...");
+
+
+        return;
+    }
+
+
     long interval = timeDifference/5;
 
     int min = interval/60;
@@ -215,13 +217,13 @@ void MainWindow::handleMapInfoReceived()
 
     if(hours > 23) hours = 12;
 
-    qint64 val = res.mintimestamp*1000;
-    QDateTime dt = calculateUTCDateTimeFromTimestamp(val);
+    qint64 val = Util::convertSecTimestamptoMSec(res.mintimestamp);
+    QDateTime dt = Util::calculateUTCDateTimeFromTimestamp(val);
     ui->lowerDateEdit->setDate(dt.date());
     ui->lowerDateEdit->setDisplayFormat("dd-MM-yyyy");
 
-    val = res.maxtimestamp*1000;
-    dt = calculateUTCDateTimeFromTimestamp(val);
+    val = Util::convertSecTimestamptoMSec(res.maxtimestamp);
+    dt = Util::calculateUTCDateTimeFromTimestamp(val);
     ui->upperDateEdit->setDate(dt.date());
     ui->upperDateEdit->setDisplayFormat("dd-MM-yyyy");
 
@@ -235,6 +237,11 @@ void MainWindow::handleMapInfoReceived()
     ui->lineEditTimeStepIntervalMinutes->setValidator(new QIntValidator(0,59));
 
     this->calculateSliderLimits(res.mintimestamp,res.maxtimestamp);
+
+    // Enable the slider
+    ui->timestepSlider->setEnabled(true);
+    ui->sliderCBox->setChecked(true);
+
 
 
 
@@ -259,25 +266,6 @@ void MainWindow::handleMapInfoReceived()
     emit ui->timestepSlider->valueChanged(1);
 
 
-   /* soma_manager::SOMAQueryObjs query;
-
-    query.request.usedates = true;
-    query.request.lowerdate = (res.mintimestamp+(ui->timestepSlider->value()-1)*this->timestep)*1000;
-    query.request.upperdate = (res.mintimestamp+(ui->timestepSlider->value())*this->timestep)*1000;
-
-    this->calculateDateIntervalforTimestep(1);
-
-    std::string queryjson;
-
-    std::vector<soma_msgs::SOMAObject > somaobjects =  rosthread.querySOMAObjects(query);
-
-    sensor_msgs::PointCloud2 state =  rosthread.getSOMACombinedObjectCloud(somaobjects);
-
-    rosthread.publishSOMAObjectCloud(state);
-
-    ui->noretrievedobjectslabel->setText(QString::number(somaobjects.size()));
-
-    this->lastqueryjson = QString::fromStdString(query.response.queryjson);*/
 
 
 
@@ -308,7 +296,7 @@ void MainWindow::handleSOMAObjectTypes(std::vector<std::string> typenames)
 
             list<<str;
 
-            qDebug()<<str;
+            //qDebug()<<str;
 
             //ui->labelsComboBox->addItem(str);
 
@@ -620,20 +608,16 @@ void MainWindow::on_queryButton_clicked()
     {
 
 
-        queryObjects.request.lowerdate = (this->timelimits.mintimestamp+(ui->timestepSlider->value()-1)*this->timestep)*1000;
-        queryObjects.request.upperdate = (this->timelimits.mintimestamp+(ui->timestepSlider->value())*this->timestep)*1000;
+        queryObjects.request.lowerdate = Util::convertSecTimestamptoMSec(this->timelimits.mintimestamp+(ui->timestepSlider->value()-1)*this->timestep);
+        queryObjects.request.upperdate = Util::convertSecTimestamptoMSec(this->timelimits.mintimestamp+(ui->timestepSlider->value())*this->timestep);
 
         queryObjects.request.usedates = true;
 
     }
 
-    this->mainBSONObj = mainbuilder.obj();
+    this->objectquery = queryObjects;
 
-    mongo::BSONObj tempObject = this->mainBSONObj;
-
-    std::string queryjson;
-
-    std::vector< soma_msgs::SOMAObject > somaobjects =  rosthread.querySOMAObjects(queryObjects);
+    this->somaobjects =  rosthread.querySOMAObjects(queryObjects);
 
     ui->noretrievedobjectslabel->setText(QString::number(somaobjects.size()));
 
@@ -643,6 +627,12 @@ void MainWindow::on_queryButton_clicked()
 
 
     lastqueryjson = QString::fromStdString(queryObjects.response.queryjson);
+
+
+    SomaObjectTableViewModel* mod = new SomaObjectTableViewModel(this);
+    mod->setSOMAObjects(somaobjects);
+
+    ui->tableViewSomaObjects->setModel(mod);
 
 
 
@@ -682,6 +672,10 @@ void MainWindow::on_resetqueryButton_clicked()
 
     this->lastqueryjson.clear();
 
+    soma_manager::SOMAQueryObjs objs;
+
+    this->objectquery = objs;
+
 
   //  emit ui->timestepSlider->valueChanged(mintimestep+1);
   //  ui->timestepSlider->setSliderPosition(mintimestep+1);
@@ -714,7 +708,7 @@ void MainWindow::on_exportjsonButton_clicked()
 
     int lastindex = lastqueryjson.indexOf("Date",index+4);
 
-    qDebug()<<lastindex;
+    //qDebug()<<lastindex;
 
     if(lastindex > 0)
         lastindex  = lastindex+6;
@@ -807,5 +801,8 @@ void MainWindow::on_sliderFirstButton_clicked()
 // TODO: Open the item detail viewer for displaying the object details and images
 void MainWindow::on_tableViewSomaObjects_doubleClicked(const QModelIndex &index)
 {
+    SomaObjectDetailDialog* dialog =  new SomaObjectDetailDialog(this,somaobjects[index.row()]);
+
+    dialog->show();
 
 }

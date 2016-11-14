@@ -539,7 +539,7 @@ std::vector<soma_msgs::SOMAObject> RosThread::querySOMAObjects(const mongo::BSON
     }
 
 
-    qDebug()<<"Query returned"<<res.size()<<"objects";
+    //qDebug()<<"Query returned"<<res.size()<<"objects";
 
     return res;
 
