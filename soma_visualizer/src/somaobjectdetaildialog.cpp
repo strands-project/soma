@@ -78,6 +78,10 @@ void SomaObjectDetailDialog::loadImage()
 {
     sensor_msgs::Image animage = somaobject.images[this->imageIndex];
 
+    QString imagecountstr = QString::number(this->imageIndex+1)+" / "+QString::number(this->somaobject.images.size());
+
+    ui->labelImageCount->setText(imagecountstr);
+
     if(animage.encoding == "bgr8")
     {
 

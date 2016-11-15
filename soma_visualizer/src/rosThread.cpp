@@ -27,52 +27,10 @@ typedef typename Cloud::Ptr CloudPtr;
 RosThread::RosThread()
 {
     shutdown = false;
-    this->objectsdbname = "somadata";
-    this->objectscollectionname = "object";
-    this->roibdname = "somadata";
 
 }
 
-void RosThread::setSOMAObjectsDBName(std::string name)
-{
-    this->objectsdbname = name;
 
-
-}
-void RosThread::setSOMAObjectsCollectionName(std::string name)
-{
-    this->objectscollectionname = name;
-
-
-}
-
-void RosThread::setSOMAROIDBName(std::string name)
-{
-    this->roibdname = name;
-
-}
-void RosThread::setSOMAROICollectionName(std::string name)
-{
-    this->roicollectionname = name;
-
-}
-
-std::string RosThread::getSOMAObjectsDBName()
-{
-    return this->objectsdbname;
-}
-std::string RosThread::getSOMAObjectsCollectionName()
-{
-    return this->objectscollectionname;
-}
-std::string RosThread::getSOMAROIDBName()
-{
-    return this->roibdname;
-}
-std::string RosThread::getSOMAROICollectionName()
-{
-    return this->roicollectionname;
-}
 void RosThread::loop()
 {
 
@@ -97,8 +55,6 @@ void RosThread::loop()
     this->roi_draw_client = n.serviceClient<soma_roi_manager::DrawROI>("soma/draw_roi");
 
     soma_map_manager::MapInfo srv;
-
-    //srv.request.request = 0;
 
     ROS_INFO("Waiting for map_info service from soma_map_manager");
 
@@ -211,7 +167,6 @@ void RosThread::drawROIwithID(std::string id)
 void RosThread::shutdownROS()
 {
     ros::shutdown();
-    // shutdown = true;
 
 
 }
@@ -506,43 +461,6 @@ SOMATimeLimits RosThread::getSOMACollectionMinMaxTimelimits()
 void RosThread::publishSOMAObjectCloud(sensor_msgs::PointCloud2 msg)
 {
     pcp.publish(msg);
-
-
-}
-
-std::vector<soma_msgs::SOMAObject> RosThread::querySOMAObjects(const mongo::BSONObj &queryobj)
-{
-
-    ros::NodeHandle nl;
-
-    mongodb_store::MessageStoreProxy somastore(nl,this->objectscollectionname,this->objectsdbname);
-
-
-    std::vector<soma_msgs::SOMAObject> res;
-
-
-
-    std::vector<boost::shared_ptr<soma_msgs::SOMAObject> > somaobjects;
-
-
-
-    somastore.query(somaobjects,queryobj,mongo::BSONObj(),mongo::BSONObj(),false,30);
-
-
-    if(somaobjects.size() > 0)
-    {
-        for(auto &labelled_object:somaobjects)
-        {
-            res.push_back(*labelled_object);
-            //qDebug()<<labelled_object.use_count;
-        }
-
-    }
-
-
-    //qDebug()<<"Query returned"<<res.size()<<"objects";
-
-    return res;
 
 
 }

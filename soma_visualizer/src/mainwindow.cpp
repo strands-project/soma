@@ -60,8 +60,6 @@ void MainWindow::setupUI()
 
 
 
-
-
 }
 
 MainWindow::~MainWindow()
@@ -343,7 +341,7 @@ void MainWindow::handleSOMAObjectTypes(std::vector<std::string> typenames)
 
             list<<str;
 
-            qDebug()<<str;
+           // qDebug()<<str;
 
             //ui->labelsComboBox->addItem(str);
 
@@ -366,7 +364,7 @@ void MainWindow::handleSOMAObjectTypes(std::vector<std::string> typenames)
 }
 void MainWindow::handleSOMAROINames(std::vector<SOMAROINameIDConfig> roinameidconfigs)
 {
-    qDebug()<<"ROI Info Received";
+    ROS_INFO("ROI Info Received");
 
     this->roinameidconfigs = roinameidconfigs;
 

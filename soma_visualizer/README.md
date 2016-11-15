@@ -1,16 +1,15 @@
-robot_state_viewer
+SOMA Visualizer
 ====
 
-A visual interface for querying Semantic Object Map 2.0(SOMA2) objects. SOMA2 objects can include objects, regions of interest (ROI), and trajectories. The viewer assumes that there are already stored objects and maps in the data center.
+SOMA Visualizer is a GUI for querying and visualizing SOMA objects.
 
-Using the visual interface, advanced queries with spatio-temporal constraints  can be specified. The returned SOMA2 objects are displayed in rviz as point clouds.
+Using the visual interface, advanced queries with spatio-temporal constraints  can be specified. The returned SOMA objects are displayed in rviz as point clouds.
 
 Prerequisites
 -------------
 
-- MongoDB (>=3.2)
-- mongodb_store - use this [fork](https://github.com/hkaraoguz/mongodb_store)
-- soma2 [link](https://github.com/hkaraoguz/soma2)
+- MongoDB (>=2.6)
+- mongodb_store
 - Qt5
 
 
@@ -28,45 +27,33 @@ Getting started (general steps)
 
     ```
 
-SOMA2 map manager
+SOMA map manager
 -----------------
-  1. Run the soma2 map manager for storing, reading and publishing 2D map. Running this node is essential for running the robot_state_viewer_node:
+  1. Run the soma map manager for storing, reading and publishing 2D map. Running this node is essential for running the robot_state_viewer_node:
   ```
-  $ rosrun soma2_map_manager soma2_map.py
+  $ rosrun soma_map_manager soma_map_manager_node.py --mapname <map_name>
   ```
-  If there are any stored 2D occupancy maps in the datacentre then map manager will let you choose the map to be published. If not, it will wait for map_server. Run the map_server with a 2D map:
+  If there are any stored 2D occupancy maps in the datacentre then map manager will let you choose the map to be published or you can input the name of the stored map as an argument as ```<map_name>```. If not, it will wait for map_server. Run the map_server with a 2D map:
     ```
     $ rosrun map_server map_server <map.yaml>
     ```
-  where `map.yaml` specifies the map you want to load. After running the `map_server`, you should save the published map using the `soma2 map manager`.
+  where `map.yaml` specifies the map you want to load. After running the `map_server`, you should save the published map using the `soma map manager`.
 
-  2. If you want to check the published map, start RVIZ, add a Map display type and subscribe to the `soma2/map` topic:
+  2. If you want to check the published map, start RVIZ, add a Map display type and subscribe to the `soma/map` topic:
 
     ```
     $ rosrun rviz rviz
     ```
 
+SOMA Visualizer
+---------------
+You can run the visualizer by calling ```roslaunch soma_visualizer soma_visualizer.launch ```
 
-SOMA2 ROI drawer
-----------------
-
-1. Run the SOMA2 ROI drawer:
-
-    ```
-    $ rosrun soma2_roi_manager soma2_roi_drawer.py
-    ```
-2. Add a MarkerArray display type in RVIZ and subscribe to the `visualization_marker_array` topic. The drawer will draw when a region is selected in the viewer.
-
-robot_state_viewer
-------------------
-
-1. Run the robot state viewer:
-
-```
-$ rosrun robot_state_viewer robot_state_viewer_node <objects db name> <objects collection name> <roi db name>
-```
+1. Add a MarkerArray display type in RVIZ and subscribe to the `soma_roi_marker_array` topic. The drawer will draw when a region is selected in the visualizer. Add a pointcloud2 display type and subscribe to ```/soma_visualizer_node/world_state_3d``` to visualize query results.
 
 
-2. If not running, start RVIZ to display the results of the queries. You can go back and forth between robot states using the slider. You can also execute advanced queries by setting dates, times, etc, enabling them using the checkboxes and by pressing the `Query` button. When you make changes in query constrains, make sure to press `Query` button for updating the query. You can also export the executed query in JSON format using the `Export JSON` button. You can reset the query by pressing `Reset` button. For any arbitrary query, if more than 30 objects are fetched, only first 30 of them are displayed as point clouds because of performance issues.
+2. Run rviz to display the results of the queries. You can go back and forth between robot states using the slider. You can choose the time interval to be inspected in terms of days,hours and minutes. You can also execute advanced queries by setting dates, times, etc, enabling them using the checkboxes and by pressing the `Query` button. When you make changes in query constrains, make sure to press `Query` button for updating the query. You can also export the executed query in JSON format using the `Export JSON` button. You can reload data from databse using `Reload` button. The returned objects are also displayed in the table view. You can double click on any of the rows to see the detailed information and images of that object. If there are multiple images, you can go through them by pressing to left and right buttons.
 
-![marker](https://raw.githubusercontent.com/hkaraoguz/robot_state_viewer/master/doc/robot_state_viewer.png)
+**For any query, if more than 50 objects are fetched, only first 50 of them are fetched with point clouds and images because of the performance issues**.
+
+![marker](https://raw.githubusercontent.com/hkaraoguz/soma_visualizer/update/doc/soma_visualizer.png)
