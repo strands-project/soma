@@ -27,52 +27,10 @@ typedef typename Cloud::Ptr CloudPtr;
 RosThread::RosThread()
 {
     shutdown = false;
-    this->objectsdbname = "somadata";
-    this->objectscollectionname = "object";
-    this->roibdname = "somadata";
 
 }
 
-void RosThread::setSOMAObjectsDBName(std::string name)
-{
-    this->objectsdbname = name;
 
-
-}
-void RosThread::setSOMAObjectsCollectionName(std::string name)
-{
-    this->objectscollectionname = name;
-
-
-}
-
-void RosThread::setSOMAROIDBName(std::string name)
-{
-    this->roibdname = name;
-
-}
-void RosThread::setSOMAROICollectionName(std::string name)
-{
-    this->roicollectionname = name;
-
-}
-
-std::string RosThread::getSOMAObjectsDBName()
-{
-    return this->objectsdbname;
-}
-std::string RosThread::getSOMAObjectsCollectionName()
-{
-    return this->objectscollectionname;
-}
-std::string RosThread::getSOMAROIDBName()
-{
-    return this->roibdname;
-}
-std::string RosThread::getSOMAROICollectionName()
-{
-    return this->roicollectionname;
-}
 void RosThread::loop()
 {
 
@@ -97,8 +55,6 @@ void RosThread::loop()
     this->roi_draw_client = n.serviceClient<soma_roi_manager::DrawROI>("soma/draw_roi");
 
     soma_map_manager::MapInfo srv;
-
-    //srv.request.request = 0;
 
     ROS_INFO("Waiting for map_info service from soma_map_manager");
 
@@ -159,11 +115,9 @@ void RosThread::loop()
     ros::Rate loop(10);
 
 
-    this->fetchSOMAROIs();
+    this->fetchDataFromDB();
 
-    this->fetchSOMAObjectTypesIDs();
 
-    emit mapinfoReceived();
 
 
     while(ros::ok())
@@ -185,6 +139,17 @@ void RosThread::loop()
 
 
 }
+void RosThread::fetchDataFromDB()
+{
+    this->fetchSOMAROIs();
+
+    this->fetchSOMAObjectTypesIDs();
+
+    emit mapinfoReceived();
+
+
+
+}
 void RosThread::drawROIwithID(std::string id)
 {
 
@@ -192,6 +157,7 @@ void RosThread::drawROIwithID(std::string id)
 
     drawroi.request.map_name = this->map_name;
     drawroi.request.roi_id = id;
+    drawroi.request.draw_mostrecent = true;
 
     this->roi_draw_client.call(drawroi);
 
@@ -201,7 +167,6 @@ void RosThread::drawROIwithID(std::string id)
 void RosThread::shutdownROS()
 {
     ros::shutdown();
-    // shutdown = true;
 
 
 }
@@ -470,54 +435,7 @@ std::string RosThread::getMapName()
     return this->map_name;
 
 }
-std::string RosThread::getSOMAObjectDateWithTimestep(int timestep)
-{
-    ros::NodeHandle nl;
-    mongodb_store::MessageStoreProxy somastore(nl,this->objectscollectionname,this->objectsdbname);
 
-    mongo::BSONObjBuilder builder2;
-
-    sensor_msgs::PointCloud2 result;
-
-    QJsonObject jsonobj;
-
-    jsonobj.insert("timestep",timestep);
-    jsonobj.insert("map_name",QString::fromStdString(this->map_name));
-
-    QJsonDocument doc;
-
-    doc.setObject(jsonobj);
-
-    QString str(doc.toJson());
-
-    //  qDebug()<<str;
-
-    std::stringstream ss;
-    //  ss<<"{\"timestep\":\""<<timestep<<"\,\"map_name\":\""<<this->map_name<<"\"}";
-
-    builder2.appendElements(mongo::fromjson(str.toStdString()));
-
-
-    std::vector<boost::shared_ptr<soma_msgs::SOMAObject> > somaobjects;
-
-    somastore.query(somaobjects,builder2.obj());
-    nl.shutdown();
-    soma_msgs::SOMAObject anobject;
-    std::string date;
-    if(somaobjects.size() > 0){
-        anobject = *somaobjects[0];
-        qint64 val = (float)anobject.logtimestamp*1000;
-        QDateTime dt = QDateTime::fromMSecsSinceEpoch(val,Qt::UTC);
-        //  qDebug()<<dt.toString(Qt::ISODate);
-        date = dt.toString(Qt::ISODate).toStdString();
-    }
-
-
-    somaobjects.clear();
-
-
-    return date;
-}
 SOMATimeLimits RosThread::getSOMACollectionMinMaxTimelimits()
 {
 
@@ -546,50 +464,12 @@ void RosThread::publishSOMAObjectCloud(sensor_msgs::PointCloud2 msg)
 
 
 }
-
-std::vector<soma_msgs::SOMAObject> RosThread::querySOMAObjects(const mongo::BSONObj &queryobj)
-{
-
-    ros::NodeHandle nl;
-
-    mongodb_store::MessageStoreProxy somastore(nl,this->objectscollectionname,this->objectsdbname);
-
-
-    std::vector<soma_msgs::SOMAObject> res;
-
-
-
-    std::vector<boost::shared_ptr<soma_msgs::SOMAObject> > somaobjects;
-
-
-
-    somastore.query(somaobjects,queryobj,mongo::BSONObj(),mongo::BSONObj(),false,30);
-
-
-    if(somaobjects.size() > 0)
-    {
-        for(auto &labelled_object:somaobjects)
-        {
-            res.push_back(*labelled_object);
-            //qDebug()<<labelled_object.use_count;
-        }
-
-    }
-
-
-    qDebug()<<"Query returned"<<res.size()<<"objects";
-
-    return res;
-
-
-}
 std::vector<soma_msgs::SOMAObject> RosThread::querySOMAObjects(soma_manager::SOMAQueryObjs& somaquery)
 {
-  //  ros::NodeHandle nl;
-
-  //  ros::ServiceClient client = nl.serviceClient("soma/query_objects");
 
     this->object_query_client.call(somaquery);
+
+
 
     return somaquery.response.objects;
 

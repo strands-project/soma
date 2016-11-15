@@ -1,11 +1,8 @@
 <launch>
 	
-	<arg name="db_name" default="somadata" />
-        <arg name="object_collection_name" default="object"/>
-        <arg name="roi_collection_name" default="roi"/>
-
+	
       
-<node name="soma_visualizer" pkg="soma_visualizer" type="soma_visualizer_node" args="$(arg db_name) $(arg object_collection_name) $(arg db_name) $(arg roi_collection_name)" output="screen"/>
+<node name="soma_visualizer" pkg="soma_visualizer" type="soma_visualizer_node" output="screen"/>
 	
 <node name="soma_draw_roi" pkg="soma_roi_manager" type="soma_roi_drawer.py" output="screen"/>
    

@@ -7,7 +7,7 @@ project(soma_visualizer)
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   rospy
-  std_msgs sensor_msgs pcl_ros mongodb_store soma_msgs nav_msgs soma_map_manager soma_roi_manager soma_manager
+  std_msgs sensor_msgs pcl_ros mongodb_store soma_msgs nav_msgs soma_map_manager soma_roi_manager soma_manager cv_bridge
 )
 
 set(CMAKE_BUILD_TYPE Release)
@@ -27,6 +27,7 @@ find_package(Qt5Declarative)
 find_package(PkgConfig)
 INCLUDE(FindPkgConfig)
 
+
 #pkg_check_modules(LIBMONGOCXX REQUIRED libmongocxx)
 #pkg_check_modules(LIBBSONCXX REQUIRED libbsoncxx)
 
@@ -41,8 +42,8 @@ INCLUDE(FindPkgConfig)
 #INCLUDE(${QT_USE_FILE})
 #ADD_DEFINITIONS(${QT_DEFINITIONS})
 
-SET(qo_HEADERS include/mainwindow.h include/rosThread.h )
-SET(qt_FORMS ui/mainwindow.ui)
+SET(qo_HEADERS include/mainwindow.h include/rosThread.h include/somaobjecttableviewmodel.h include/somaobjectdetaildialog.h)
+SET(qt_FORMS ui/mainwindow.ui ui/somaobjectdetaildialog.ui)
 file(GLOB soma_visualizer_SOURCES src/*.cpp )
 
 
@@ -142,7 +143,7 @@ QT5_WRAP_UI(uis_h ${qt_FORMS})
 catkin_package(
   INCLUDE_DIRS include
 #  LIBRARIES robot_state_viewer
-  CATKIN_DEPENDS roscpp rospy std_msgs sensor_msgs nav_msgs  pcl_ros mongodb_store soma_map_manager soma_roi_manager soma_manager
+  CATKIN_DEPENDS roscpp rospy std_msgs sensor_msgs nav_msgs  pcl_ros mongodb_store soma_map_manager soma_roi_manager soma_manager cv_bridge
 #  DEPENDS system_lib
 )
 
@@ -179,7 +180,7 @@ add_custom_target(headers SOURCES ${LibFilesSOMAVISUALIZER})
 #link_directories(${LIBMONGOCXX_LIBRARY_DIRS} ${LIBBSONCXX_LIBRARY_DIRS})
 
 ## Declare a C++ executable
-add_executable(soma_visualizer_node src/main.cpp ${soma_visualizer_SOURCES} ${qo_HEADERS_MOC} ${uis_h} include/querybuilder.h)
+add_executable(soma_visualizer_node src/main.cpp ${soma_visualizer_SOURCES} ${qo_HEADERS_MOC} ${uis_h} include/util.h)
 
 qt5_use_modules(soma_visualizer_node Widgets Core)
 

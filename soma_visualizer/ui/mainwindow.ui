@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>619</width>
-    <height>648</height>
+    <height>857</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -22,7 +22,7 @@
       </property>
       <widget class="QWidget" name="tab">
        <attribute name="title">
-        <string>SOMA Queries</string>
+        <string>SOMA Object Queries</string>
        </attribute>
        <layout class="QVBoxLayout" name="verticalLayout_3">
         <item>
@@ -678,6 +678,16 @@
          </layout>
         </item>
         <item>
+         <widget class="QTableView" name="tableViewSomaObjects">
+          <property name="minimumSize">
+           <size>
+            <width>0</width>
+            <height>200</height>
+           </size>
+          </property>
+         </widget>
+        </item>
+        <item>
          <layout class="QHBoxLayout" name="horizontalLayout_6">
           <item>
            <widget class="QPushButton" name="queryButton">
@@ -737,7 +747,7 @@
              </size>
             </property>
             <property name="text">
-             <string>Reset</string>
+             <string>Reload</string>
             </property>
            </widget>
           </item>

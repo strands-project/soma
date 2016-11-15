@@ -445,36 +445,34 @@ bool handleObjectQueryRequests(soma_manager::SOMAQueryObjsRequest & req, soma_ma
 
             builder.append("map_name",map_name);
 
+            builder.append("id",req.roi_id);
 
             std::vector<boost::shared_ptr<soma_msgs::SOMAROIObject> > rois;
 
+            mongo::BSONObjBuilder sortquerybuilder;
 
-            somastore.query(rois,builder.obj());
+            sortquerybuilder.append("logtimestamp",-1); // sort descending to get the most recent roi at index 0
+
+
+            somastore.query(rois,builder.obj(),mongo::BSONObj(),sortquerybuilder.obj());
 
             nl.shutdown();
 
-
-
-            for(int i  = 0;i < rois.size(); i++)
+            if(rois.size()> 0)
             {
-                soma_msgs::SOMAROIObject roi = *rois[i];
+                soma_msgs::SOMAROIObject roi = *rois[0]; // most recent roi
+                mongo::BSONObj bsonobj = QueryBuilder::buildSOMAROIWithinQuery(roi);
 
-                if(roi.id == req.roi_id)
-                {
-                    mongo::BSONObj bsonobj = QueryBuilder::buildSOMAROIWithinQuery(roi);
-
-                    mainbuilder.appendElements(bsonobj);
-
-                    break;
-
-                }
-
+                mainbuilder.appendElements(bsonobj);
             }
+
+
+
 
 
         }
         // If object ids and/or types are used
-        if((req.objectids.size()>0 || req.objecttypes.size()) > 0 && ( !is_only_ascii_whitespace(req.objectids[0]) || !is_only_ascii_whitespace(req.objecttypes[0])))
+        if((req.objectids.size()>0 &&  !is_only_ascii_whitespace(req.objectids[0])) ||( req.objecttypes.size() > 0  && !is_only_ascii_whitespace(req.objecttypes[0])))
         {
             if(req.objectids.size() > 0 && req.objecttypes.size() > 0  )
             {
@@ -662,15 +660,15 @@ bool handleObjectQueryRequests(soma_manager::SOMAQueryObjsRequest & req, soma_ma
            // std::cout<<"Objects size "<<tempsomaobjects.size();
 
 
-            if(tempsomaobjectsmetas.size() > 30)
+            if(tempsomaobjectsmetas.size() > 50)
             {
-                  somaobjectsmetas = querySOMAObjects(tempObject,30);
+                  somaobjectsmetas = querySOMAObjects(tempObject,50);
 
-                  std::vector<std::pair< boost::shared_ptr<soma_msgs::SOMAObject>, mongo::BSONObj> >(tempsomaobjectsmetas.begin()+30, tempsomaobjectsmetas.end()).swap(tempsomaobjectsmetas);
+                  std::vector<std::pair< boost::shared_ptr<soma_msgs::SOMAObject>, mongo::BSONObj> >(tempsomaobjectsmetas.begin()+50, tempsomaobjectsmetas.end()).swap(tempsomaobjectsmetas);
 
                   somaobjectsmetas.insert(somaobjectsmetas.end(),tempsomaobjectsmetas.begin(),tempsomaobjectsmetas.end());
 
-                  ROS_WARN("Query returned %u objects. Only first 30 objects have cloud,image information",(unsigned int)somaobjectsmetas.size());
+                  ROS_WARN("Query returned %u objects. Cloud,image information of first 50 objects have been fetched",(unsigned int)somaobjectsmetas.size());
 
 
             }
