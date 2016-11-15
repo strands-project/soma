@@ -56,4 +56,4 @@ You can run the visualizer by calling ```roslaunch soma_visualizer soma_visualiz
 
 **For any query, if more than 50 objects are fetched, only first 50 of them are fetched with point clouds and images because of the performance issues**.
 
-![marker](https://raw.githubusercontent.com/hkaraoguz/soma_visualizer/visualizeraddons/doc/soma_visualizer.png)
+![marker](https://github.com/hkaraoguz/soma/blob/visualizeraddons/soma_visualizer/doc/soma_visualizer.png)
