@@ -201,6 +201,7 @@ void RosThread::drawROIwithID(std::string id)
 
     drawroi.request.map_name = this->map_name;
     drawroi.request.roi_id = id;
+    drawroi.request.draw_mostrecent = true;
 
     this->roi_draw_client.call(drawroi);
 

@@ -51,6 +51,8 @@ void MainWindow::setupUI()
 
     ui->tableViewSomaObjects->setSelectionBehavior(QTableView::SelectRows);
 
+    if(ui->tableViewSomaObjects->model())
+        ui->tableViewSomaObjects->model()->deleteLater();
 
     SomaObjectTableViewModel* mod = new SomaObjectTableViewModel(this);
 
@@ -100,10 +102,13 @@ void MainWindow::on_timestepSlider_valueChanged(int value)
 
         ui->noretrievedobjectslabel->setText(QString::number(somaobjects.size()));
 
-        SomaObjectTableViewModel* mod = new SomaObjectTableViewModel(this);
-        mod->setSOMAObjects(somaobjects);
+        ui->tableViewSomaObjects->model()->deleteLater(); //new SomaObjectTableViewModel(this);
 
-        ui->tableViewSomaObjects->setModel(mod);
+        SomaObjectTableViewModel* newmodel = new SomaObjectTableViewModel(this);
+
+        newmodel->setSOMAObjects(somaobjects);
+
+        ui->tableViewSomaObjects->setModel(newmodel);
 
 
         lastqueryjson = QString::fromStdString(this->objectquery.response.queryjson);
@@ -456,8 +461,8 @@ void MainWindow::on_queryButton_clicked()
         }
         else if(upperdatecbox)
         {
-           queryObjects.request.lowerdate = 0;
-           queryObjects.request.upperdate = upperdate;
+            queryObjects.request.lowerdate = 0;
+            queryObjects.request.upperdate = upperdate;
         }
 
 
@@ -548,8 +553,8 @@ void MainWindow::on_queryButton_clicked()
 
 
 
-             queryObjects.request.objectids = list;
-             queryObjects.request.objecttypes = typelist;
+            queryObjects.request.objectids = list;
+            queryObjects.request.objecttypes = typelist;
 
         }
         else if(typeequals){
@@ -628,6 +633,7 @@ void MainWindow::on_queryButton_clicked()
 
     lastqueryjson = QString::fromStdString(queryObjects.response.queryjson);
 
+    ui->tableViewSomaObjects->model()->deleteLater();
 
     SomaObjectTableViewModel* mod = new SomaObjectTableViewModel(this);
     mod->setSOMAObjects(somaobjects);
@@ -662,23 +668,29 @@ void MainWindow::on_resetqueryButton_clicked()
 
     ui->listViewObjectTypes->clearSelection();
 
+    ui->listViewObjectTypes->model()->deleteLater();
+
+    ui->listViewObjectIDs->clearSelection();
+
+    ui->listViewObjectIDs->model()->deleteLater();
+
     QStringListModel* emptymodel =  new  QStringListModel(this);
 
     ui->listViewObjectTypes->setModel(emptymodel);
 
-    ui->listViewObjectIDs->clearSelection();
-
     ui->listViewObjectIDs->setModel(emptymodel);
 
     this->lastqueryjson.clear();
+
+    this->somaobjects.clear();
 
     soma_manager::SOMAQueryObjs objs;
 
     this->objectquery = objs;
 
 
-  //  emit ui->timestepSlider->valueChanged(mintimestep+1);
-  //  ui->timestepSlider->setSliderPosition(mintimestep+1);
+    //  emit ui->timestepSlider->valueChanged(mintimestep+1);
+    //  ui->timestepSlider->setSliderPosition(mintimestep+1);
 
     this->setupUI();
     this->rosthread.fetchDataFromDB();
@@ -694,6 +706,7 @@ void MainWindow::on_exportjsonButton_clicked()
     QDialog* dialog = new QDialog(this);
 
     dialog->setGeometry(100,100,400,400);
+
 
     QTextBrowser* browser = new QTextBrowser(dialog);
 
@@ -731,14 +744,23 @@ void MainWindow::on_exportjsonButton_clicked()
 
     dialog->setWindowTitle("Query JSON");
 
+    dialog->setAttribute(Qt::WA_DeleteOnClose);
+
+
 }
 
 void MainWindow::on_sliderCBox_clicked(bool checked)
 {
-    if(checked){
+    if(checked)
+    {
+        ui->timestepSlider->setEnabled(true);
 
         ui->lowerDateCBox->setChecked(false);
         ui->upperDateCBox->setChecked(false);
+    }
+    else
+    {
+        ui->timestepSlider->setEnabled(false);
     }
 
 }
@@ -788,13 +810,15 @@ void MainWindow::on_lineEditTimeStepIntervalDay_editingFinished()
 
 void MainWindow::on_sliderLastButton_clicked()
 {
-    ui->timestepSlider->setValue(ui->timestepSlider->maximum());
+    if(ui->timestepSlider->isEnabled())
+        ui->timestepSlider->setValue(ui->timestepSlider->maximum());
 
 }
 
 void MainWindow::on_sliderFirstButton_clicked()
 {
-     ui->timestepSlider->setValue(ui->timestepSlider->minimum());
+    if(ui->timestepSlider->isEnabled())
+        ui->timestepSlider->setValue(ui->timestepSlider->minimum());
 
 }
 
@@ -804,5 +828,8 @@ void MainWindow::on_tableViewSomaObjects_doubleClicked(const QModelIndex &index)
     SomaObjectDetailDialog* dialog =  new SomaObjectDetailDialog(this,somaobjects[index.row()]);
 
     dialog->show();
+
+    dialog->setAttribute(Qt::WA_DeleteOnClose);
+
 
 }

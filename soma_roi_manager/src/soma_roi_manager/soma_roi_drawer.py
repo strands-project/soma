@@ -88,12 +88,12 @@ class SOMAROIDrawer():
     def handle_draw_roi(self,req):
         if(len(req.rgb)==3):
             self.rgb = req.rgb
-        if not req.draw_all:
-            return DrawROIResponse(self.load_objects(req.map_name,req.roi_id,req.roi_config,False))
-        elif req.draw_all:
-            return DrawROIResponse(self.load_objects(req.map_name,req.roi_id,req.roi_config,True))
+        #if not req.draw_all:
+        #    return DrawROIResponse(self.load_objects(req.map_name,req.roi_id,req.roi_config,False))
+        #elif req.draw_all:
+        return DrawROIResponse(self.load_objects(req.map_name,req.roi_id,req.roi_config,req.draw_all,req.draw_mostrecent))
 
-        return True
+        #return True
 
 
     def _delete_markers(self):
@@ -110,26 +110,40 @@ class SOMAROIDrawer():
         lat = 90 - math.degrees(math.acos(float(y) / earth_radius))
         return [lng , lat]
 
-    def _retrieve_objects(self, map_name, roi_id, roi_config, draw_all):
+    def _retrieve_objects(self, map_name, roi_id, roi_config, draw_all,draw_mostrecent):
         if draw_all:
             objs = self._msg_store.query(SOMAROIObject._type, message_query={"map_name": map_name,
                                                                       })
             return objs
         if roi_config == "":
-            objs = self._msg_store.query(SOMAROIObject._type, message_query={"map_name": map_name,
+            if not draw_mostrecent:
+                objs = self._msg_store.query(SOMAROIObject._type, message_query={"map_name": map_name,
                                                                       "id": roi_id})
+            else:
+                objs = self._msg_store.query(SOMAROIObject._type, message_query={"map_name": map_name,
+                                                                      "id": roi_id},sort_query=[("logtimestamp",-1)],limit=1)
+
         elif roi_id !="" and roi_config != "":
-            objs = self._msg_store.query(SOMAROIObject._type, message_query={"map_name": map_name,
+            if not draw_mostrecent:
+                objs = self._msg_store.query(SOMAROIObject._type, message_query={"map_name": map_name,
                                                                       "id": roi_id, "config":roi_config})
+            else:
+                objs = self._msg_store.query(SOMAROIObject._type, message_query={"map_name": map_name,
+                                                                      "id": roi_id, "config":roi_config},sort_query=[("logtimestamp",-1)],limit=1)
+
         else:
-            objs = self._msg_store.query(SOMAROIObject._type, message_query={"map_name": map_name,
+            if not draw_mostrecent:
+                objs = self._msg_store.query(SOMAROIObject._type, message_query={"map_name": map_name,
                                                                       "config":roi_config})
+            else:
+                objs = self._msg_store.query(SOMAROIObject._type, message_query={"map_name": map_name,
+                                                                      "config":roi_config},sort_query=[("logtimestamp",-1)],limit=1)
 
 
 
         return objs
 
-    def load_objects(self, map_name, roi_id, roi_config, draw_all):
+    def load_objects(self, map_name, roi_id, roi_config, draw_all,draw_mostrecent):
 
         self._delete_markers()
 
@@ -139,7 +153,7 @@ class SOMAROIDrawer():
         markerarray = MarkerArray()
 
         #get objects from db
-        objs = self._retrieve_objects(map_name,roi_id,roi_config,draw_all)
+        objs = self._retrieve_objects(map_name,roi_id,roi_config,draw_all,draw_mostrecent)
 
         # if collection is empty return False
         if not objs:

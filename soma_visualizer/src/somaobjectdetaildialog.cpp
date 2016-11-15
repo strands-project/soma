@@ -7,6 +7,8 @@ SomaObjectDetailDialog::SomaObjectDetailDialog(QWidget *parent) :
 {
     ui->setupUi(this);
 
+    this->setWindowTitle("SOMA Object Detail");
+
 
 
 }
@@ -15,6 +17,8 @@ SomaObjectDetailDialog::SomaObjectDetailDialog(QWidget *parent, soma_msgs::SOMAO
     ui(new Ui::SomaObjectDetailDialog)
 {
     ui->setupUi(this);
+
+    this->setWindowTitle("SOMA Object Detail");
 
     this->somaobject =somaobject;
 
