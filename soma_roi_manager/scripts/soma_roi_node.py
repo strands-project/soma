@@ -12,7 +12,7 @@ if __name__=="__main__":
 
     parser = argparse.ArgumentParser(prog='soma_roi.py')
     parser.add_argument(
-        "conf", nargs=1, help='Name of the roi configuration. Put [] with "," to have more than one configuration. For example: [config1, config2]'
+        "conf", nargs=1, help='Name of the roi configuration. Put [] with "," to have more than one configuration. For example: [config1,config2]'
     )
     parser.add_argument('-t', metavar='config-file')
     parser.add_argument('--db_name', help='Name of the roi db',default="somadata")
