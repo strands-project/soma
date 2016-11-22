@@ -23,7 +23,6 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 # find_package(Boost REQUIRED COMPONENTS system)
 #find_package(Qt5 REQUIRED)
 find_package(Qt5Widgets)
-find_package(Qt5Declarative)
 find_package(PkgConfig)
 INCLUDE(FindPkgConfig)
 
