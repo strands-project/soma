@@ -143,7 +143,7 @@ void RosThread::fetchDataFromDB()
 {
     this->fetchSOMAROIs();
 
-    this->fetchSOMAObjectTypesIDs();
+    this->fetchSOMAObjectTypesIDsConfigs();
 
     emit mapinfoReceived();
 
@@ -170,7 +170,7 @@ void RosThread::shutdownROS()
 
 
 }
-void RosThread::fetchSOMAObjectTypesIDs()
+void RosThread::fetchSOMAObjectTypesIDsConfigs()
 {
 
     std::vector<std::string> somalabels;
@@ -188,12 +188,17 @@ void RosThread::fetchSOMAObjectTypesIDs()
 
     QString filename2 = "objectids.txt";
 
+    QString filename3 = "objectconfigs.txt";
+
     QString objecttypesdir = dir;
     QString idsdir = dir;
+    QString configsdir = dir;
 
     objecttypesdir.append(filename);
 
     idsdir.append(filename2);
+
+    configsdir.append(filename3);
 
     QFile file(objecttypesdir);
 
@@ -209,7 +214,17 @@ void RosThread::fetchSOMAObjectTypesIDs()
 
     if(!file2.open(QFile::WriteOnly))
     {
-        qDebug()<<"Cannot Open types file! Returning...";
+        qDebug()<<"Cannot Open ids file! Returning...";
+        return ;
+
+
+    }
+
+    QFile file3(configsdir);
+
+    if(!file3.open(QFile::WriteOnly))
+    {
+        qDebug()<<"Cannot Open configs file! Returning...";
         return ;
 
 
@@ -224,6 +239,7 @@ void RosThread::fetchSOMAObjectTypesIDs()
         ROS_WARN("Warning!! Object query service cannot be called!!");
         file.close();
         file2.close();
+        file3.close();
         return;
     }
 
@@ -232,6 +248,11 @@ void RosThread::fetchSOMAObjectTypesIDs()
 
     // List that stores the object ids
     QStringList idsls;
+
+    // List that stores the object ids
+    QStringList configsls;
+
+
 
 
     // If we have any objects
@@ -256,6 +277,10 @@ void RosThread::fetchSOMAObjectTypesIDs()
 
         }
     }
+    else
+    {
+        file.close();
+    }
 
     // If we have any objects
     if(queryobjs.response.ids.size()>0)
@@ -278,57 +303,80 @@ void RosThread::fetchSOMAObjectTypesIDs()
     }
     else
     {
-        file.close();
         file2.close();
-        return;
     }
-
-
-
-    QTextStream stream(&file);
-
-    foreach(QString st, typesls)
+    // If we have any configs
+    if(queryobjs.response.configs.size()>0)
     {
-        stream<<st<<"\n";
 
-        // Dump data to array
-        // res[count].append(st.toStdString());
 
-        // Then transfer it into vector
-        //  somalabels.push_back(res[count]);
+        for(int i = 0; i < queryobjs.response.configs.size(); i++)
+        {
+            QString str;
 
-        // this->labelnames.push_back(res[count]);
 
-        //  count++;
-        // qDebug()<<st;
+            str.append(QString::fromStdString(queryobjs.response.configs[i]));
+
+
+            configsls.append(str);
+
+
+
+        }
     }
-
-
-    file.close();
-
-
-
-    QTextStream stream2(&file2);
-
-    foreach(QString st, idsls)
+    else
     {
-        stream2<<st<<"\n";
+        file3.close();
 
-        // Dump data to array
-        // res[count].append(st.toStdString());
-
-        // Then transfer it into vector
-        //  somalabels.push_back(res[count]);
-
-        // this->labelnames.push_back(res[count]);
-
-        //  count++;
-        // qDebug()<<st;
     }
 
+    if(file.isOpen())
+    {
 
-    file2.close();
+        QTextStream stream(&file);
 
+        foreach(QString st, typesls)
+        {
+            stream<<st<<"\n";
+
+
+        }
+
+
+        file.close();
+
+    }
+
+    if(file2.isOpen())
+    {
+        QTextStream stream2(&file2);
+
+        foreach(QString st, idsls)
+        {
+            stream2<<st<<"\n";
+
+
+        }
+
+
+        file2.close();
+
+    }
+
+    if(file3.isOpen())
+    {
+
+        QTextStream stream3(&file3);
+
+        foreach(QString st, configsls)
+        {
+            stream3<<st<<"\n";
+
+        }
+
+
+        file3.close();
+    }
 
     emit SOMAObjectTypes(somalabels);
 
@@ -352,15 +400,15 @@ void RosThread::fetchSOMAROIs()
         {
 
 
-                for(auto &roi:query_rois.response.rois)
-                {
-                    SOMAROINameIDConfig roinameidconfig;
-                    roinameidconfig.id = roi.id.data();
-                    roinameidconfig.name = roi.type.data();
-                    roinameidconfig.config = roi.config.data();
-                    this->roinameidconfigs.push_back(roinameidconfig);
-                    this->roiarray.push_back(roi);
-                }
+            for(auto &roi:query_rois.response.rois)
+            {
+                SOMAROINameIDConfig roinameidconfig;
+                roinameidconfig.id = roi.id.data();
+                roinameidconfig.name = roi.type.data();
+                roinameidconfig.config = roi.config.data();
+                this->roinameidconfigs.push_back(roinameidconfig);
+                this->roiarray.push_back(roi);
+            }
 
         }
 
@@ -447,9 +495,9 @@ SOMATimeLimits RosThread::getSOMACollectionMinMaxTimelimits()
 
     if(this->object_query_client.call(query_objs))
     {
-       limits.mintimestamp =  query_objs.response.timedatelimits[0];
+        limits.mintimestamp =  query_objs.response.timedatelimits[0];
 
-       limits.maxtimestamp = query_objs.response.timedatelimits[1];
+        limits.maxtimestamp = query_objs.response.timedatelimits[1];
 
         ROS_INFO("Date limits %ld %ld",limits.mintimestamp,limits.maxtimestamp);
     }

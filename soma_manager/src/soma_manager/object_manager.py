@@ -235,7 +235,7 @@ class SOMAManager():
 
         query_objects = rospy.ServiceProxy('soma/query_objects',SOMAQueryObjs)
 
-        resp = query_objects(query_type=0,config=self.soma_conf)
+        resp = query_objects(query_type=0,configs=[self.soma_conf])
         if resp:
             objs = resp.objects
         else:

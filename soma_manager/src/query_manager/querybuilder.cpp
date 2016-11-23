@@ -81,40 +81,7 @@ mongo::BSONObj QueryBuilder::buildSOMADateQuery(unsigned long lowerdate, unsigne
 
 }
 
-/*mongo::BSONObj QueryBuilder::buildSOMATimestepQuery(int timestep)
-{
-    mongo::BSONObjBuilder builder;
 
-    builder.append("timestep",timestep);
-
-    return builder.obj();
-
-}*/
-
-/*mongo::BSONObj QueryBuilder::buildSOMATypeEqualsQuery(const std::vector<std::string>& typelist)
-{
-
-
-    mongo::BSONArrayBuilder arrbuilder;
-
-    for(int i = 0; i < typelist.size(); i++)
-    {
-        mongo::BSONObjBuilder builder;
-
-        builder.append("type",typelist[i].data());
-
-        arrbuilder.append(builder.obj());
-
-    }
-
-    mongo::BSONObjBuilder builder;
-
-    builder.append("$or",arrbuilder.arr());
-
-
-    return builder.obj();
-
-}*/
 mongo::BSONObj QueryBuilder::buildSOMAStringArrayBasedQuery(const std::vector<std::string> &list, std::vector<std::string> fieldnames, std::vector<int> objectIndexes, std::string arrayOperator)
 {
 

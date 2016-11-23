@@ -162,7 +162,7 @@ void fetchSOMAROIConfigsIDs(std::vector<std::string>& configs, std::vector<std::
     return;
 }
 
-void fetchSOMAObjectTypesIDs(std::vector<std::string>& types, std::vector<std::string>& ids)
+void fetchSOMAObjectTypesIDsConfigs(std::vector<std::string>& types, std::vector<std::string>& ids, std::vector<std::string>& configs)
 {
     ros::NodeHandle nl;
 
@@ -191,6 +191,9 @@ void fetchSOMAObjectTypesIDs(std::vector<std::string>& types, std::vector<std::s
     // List that stores the object ids
     QStringList idsls;
 
+    // List that stores the object configs
+    QStringList configsls;
+
 
 
     // If we have any objects
@@ -204,6 +207,8 @@ void fetchSOMAObjectTypesIDs(std::vector<std::string>& types, std::vector<std::s
 
             QString str2;
 
+            QString str3;
+
 
 
             //   spr = somaobjects[i];
@@ -212,10 +217,15 @@ void fetchSOMAObjectTypesIDs(std::vector<std::string>& types, std::vector<std::s
 
             str2.append(QString::fromStdString(somaobjects[i]->id));
 
+            str3.append(QString::fromStdString(somaobjects[i]->config));
+
+
 
             typesls.append(str);
 
             idsls.append(str2);
+
+            configsls.append(str3);
 
 
 
@@ -230,10 +240,6 @@ void fetchSOMAObjectTypesIDs(std::vector<std::string>& types, std::vector<std::s
 
     // Remove duplicate names
     typesls.removeDuplicates();
-
-    // Sort the types
-    // typesls.sort(Qt::CaseInsensitive);
-
 
     QCollator collator;
     collator.setNumericMode(true);
@@ -280,6 +286,28 @@ void fetchSOMAObjectTypesIDs(std::vector<std::string>& types, std::vector<std::s
         ids.push_back(st.toStdString());
 
     }
+
+
+    // Remove duplicate names
+    configsls.removeDuplicates();
+
+
+
+    std::sort(
+                configsls.begin(),
+                configsls.end(),
+                [&collator](const QString &file1, const QString &file)
+    {
+        return collator.compare(file1, file) < 0;
+    });
+
+
+    foreach(st, configsls)
+    {
+        configs.push_back(st.toStdString());
+
+    }
+
 
     return;
 
@@ -472,9 +500,47 @@ bool handleObjectQueryRequests(soma_manager::SOMAQueryObjsRequest & req, soma_ma
 
         }
         // If object ids and/or types are used
-        if((req.objectids.size()>0 &&  !is_only_ascii_whitespace(req.objectids[0])) ||( req.objecttypes.size() > 0  && !is_only_ascii_whitespace(req.objecttypes[0])))
+        if((req.objectids.size()>0 &&  !is_only_ascii_whitespace(req.objectids[0])) ||( req.objecttypes.size() > 0  && !is_only_ascii_whitespace(req.objecttypes[0])) ||( req.configs.size() > 0  && !is_only_ascii_whitespace(req.configs[0])))
         {
-            if(req.objectids.size() > 0 && req.objecttypes.size() > 0  )
+            std::vector<std::string> list;
+
+            std::vector<std::string> fieldnames;
+            std::vector<int> objectIndexes;
+
+            if(req.objectids.size() > 0 && !is_only_ascii_whitespace(req.objectids[0]))
+            {
+                 fieldnames.push_back("id");
+
+                 list.insert(list.end(),req.objectids.begin(),req.objectids.end());
+
+                 objectIndexes.push_back(req.objectids.size());
+
+
+            }
+            if(req.objecttypes.size() > 0 && !is_only_ascii_whitespace(req.objecttypes[0]))
+            {
+                fieldnames.push_back("type");
+
+                list.insert(list.end(),req.objecttypes.begin(),req.objecttypes.end());
+
+                objectIndexes.push_back(req.objecttypes.size());
+
+
+            }
+            if(req.configs.size()> 0 && !is_only_ascii_whitespace(req.configs[0]))
+            {
+                fieldnames.push_back("config");
+
+                list.insert(list.end(),req.configs.begin(),req.configs.end());
+
+                objectIndexes.push_back(req.configs.size());
+
+            }
+
+            mongo::BSONObj bsonobj = QueryBuilder::buildSOMAStringArrayBasedQuery(list,fieldnames,objectIndexes,"$or");
+
+            mainbuilder.appendElements(bsonobj);
+            /*if(req.objectids.size() > 0 && req.objecttypes.size() > 0  )
             {
                 //std::cout<<req.objectids.size()<<" "<<req.objecttypes.size()<<" "<<req.objectids[0].data()<<" "<<req.objecttypes[0].data();
                 //if()
@@ -572,19 +638,13 @@ bool handleObjectQueryRequests(soma_manager::SOMAQueryObjsRequest & req, soma_ma
 
                 mainbuilder.appendElements(bsonobj);
 
-            }
+            }*/
 
 
 
         }
 
-        if(req.config != "" && req.config.size() > 1)
-        {
-            mongo::BSONObj bsonobj = QueryBuilder::buildSOMAConfigQuery(req.config);
 
-            mainbuilder.appendElements(bsonobj);
-
-        }
         if(!req.useroi_id && req.custom_roi.size() == 4)
         {
             soma_msgs::SOMAROIObject roiobj;
@@ -712,12 +772,13 @@ bool handleObjectQueryRequests(soma_manager::SOMAQueryObjsRequest & req, soma_ma
     // Handle Query for type and ids
     else if(req.query_type == 1)
     {
-        std::vector<std::string> types, ids;
+        std::vector<std::string> types, ids, configs;
 
-        fetchSOMAObjectTypesIDs(types,  ids);
+        fetchSOMAObjectTypesIDsConfigs(types,  ids, configs);
 
         resp.types = types;
         resp.ids = ids;
+        resp.configs = configs;
 
 
 
@@ -731,14 +792,7 @@ bool handleObjectQueryRequests(soma_manager::SOMAQueryObjsRequest & req, soma_ma
         resp.timedatelimits.push_back(res.maxtimestamp);
 
     }
-    // Handle Query for rois
-    /*  else if(req.query_type == 2)
-    {
-        std::vector<soma_msgs::SOMAROIObject> res = fetchSOMAROIs();
 
-        resp.rois = res;
-
-    }*/
 
 
     return true;

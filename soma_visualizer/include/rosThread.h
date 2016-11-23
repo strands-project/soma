@@ -87,8 +87,8 @@ private:
      // Get the ROIs from db
      void fetchSOMAROIs();
 
-     // Get the object labels from db
-     void fetchSOMAObjectTypesIDs();
+     // Get the object types,ids and configs from db
+     void fetchSOMAObjectTypesIDsConfigs();
 
      std::string map_name;
      std::string map_unique_id;

@@ -143,7 +143,7 @@ void MainWindow::calculateSliderLimits(long lowertimestamp, long uppertimestamp)
 
     double interval = (double)timestepdiff/this->timestep;
 
-    this->maxtimestep = round(interval);
+    this->maxtimestep = ceil(interval);
 
     ui->timestepSlider->setMaximum(this->maxtimestep);
     ui->timestepSlider->setMinimum(1);
@@ -210,7 +210,7 @@ void MainWindow::handleMapInfoReceived()
     }
 
 
-    long interval = timeDifference/5;
+    long interval = timeDifference;
 
     int min = interval/60;
 
@@ -281,7 +281,9 @@ void MainWindow::handleSOMAObjectTypes(std::vector<std::string> typenames)
 
     QFile file(dir);
 
-    if(file.open(QFile::ReadOnly))
+    Util::loadListView(&file,ui->listViewObjectTypes);
+
+   /* if(file.open(QFile::ReadOnly))
     {
 
         QTextStream stream(&file);
@@ -313,7 +315,7 @@ void MainWindow::handleSOMAObjectTypes(std::vector<std::string> typenames)
 
         file.close();
 
-    }
+    }*/
 
 
 
@@ -323,7 +325,17 @@ void MainWindow::handleSOMAObjectTypes(std::vector<std::string> typenames)
 
     QFile file2(dir);
 
-    if(file2.open(QFile::ReadOnly))
+    Util::loadListView(&file2,ui->listViewObjectIDs);
+
+    dir = QDir::homePath();
+
+    dir.append("/").append(".soma").append("/objectconfigs.txt");
+
+    QFile file3(dir);
+
+    Util::loadListView(&file3,ui->listViewObjectConfigs);
+
+   /* if(file2.open(QFile::ReadOnly))
     {
 
         QTextStream stream(&file2);
@@ -356,7 +368,9 @@ void MainWindow::handleSOMAObjectTypes(std::vector<std::string> typenames)
 
         file2.close();
 
-    }
+    }*/
+
+
 
 
 
@@ -410,6 +424,8 @@ void MainWindow::on_queryButton_clicked()
     bool idequals = ui->listViewIDCBox->isChecked();
 
     bool typeequals = ui->listViewObjectTypesCBox->isChecked();
+
+    bool configequals = ui->listViewConfigCBox->isChecked();
 
     bool slideractive = ui->sliderCBox->isChecked();
 
@@ -517,11 +533,11 @@ void MainWindow::on_queryButton_clicked()
     }
 
 
-    if(typeequals || idequals)
+    if(typeequals || idequals || configequals)
     {
-        if(typeequals && idequals)
+        if(typeequals)
         {
-            QModelIndexList indexlist = ui->listViewObjectIDs->selectionModel()->selectedIndexes();
+           /* QModelIndexList indexlist = ui->listViewObjectIDs->selectionModel()->selectedIndexes();
 
             std::vector<std::string> list;
             std::vector<std::string> typelist;
@@ -533,12 +549,12 @@ void MainWindow::on_queryButton_clicked()
                 QString data = indx.data().toString();
 
                 list.push_back(data.toStdString());
-            }
+            }*/
 
 
+            std::vector<std::string> typelist;
 
-
-            indexlist = ui->listViewObjectTypes->selectionModel()->selectedIndexes();
+            QModelIndexList indexlist = ui->listViewObjectTypes->selectionModel()->selectedIndexes();
 
 
             foreach(const QModelIndex& indx, indexlist)
@@ -550,12 +566,10 @@ void MainWindow::on_queryButton_clicked()
 
 
 
-
-            queryObjects.request.objectids = list;
             queryObjects.request.objecttypes = typelist;
 
         }
-        else if(typeequals){
+       /* else if(typeequals){
             QModelIndexList indexlist = ui->listViewObjectTypes->selectionModel()->selectedIndexes();
 
             std::vector<std::string> list;
@@ -569,8 +583,8 @@ void MainWindow::on_queryButton_clicked()
 
 
             queryObjects.request.objecttypes = list;
-        }
-        else if(idequals)
+        }*/
+        if(idequals)
         {
             QModelIndexList indexlist = ui->listViewObjectIDs->selectionModel()->selectedIndexes();
 
@@ -587,6 +601,24 @@ void MainWindow::on_queryButton_clicked()
 
             queryObjects.request.objectids = list;
         }
+        if(configequals)
+        {
+            QModelIndexList indexlist = ui->listViewObjectConfigs->selectionModel()->selectedIndexes();
+
+            std::vector<std::string> list;
+
+            foreach(const QModelIndex& indx, indexlist)
+            {
+                QString data = indx.data().toString();
+
+                list.push_back(data.toStdString());
+            }
+
+
+
+            queryObjects.request.configs = list;
+        }
+
 
     }
 
