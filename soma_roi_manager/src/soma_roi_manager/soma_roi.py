@@ -107,7 +107,7 @@ class SOMAROIManager():
 
         self._msg_store=MessageStoreProxy(database=self.db_name, collection=self.collection_name)
 
-        self._server = InteractiveMarkerServer("soma_roi")
+        self._server = InteractiveMarkerServer("soma_roi/%s" % soma_conf)
 
         rospy.loginfo("Running SOMA ROI Manager (conf: %s, types: %s db_name: %s collection_name: %s)", self.soma_conf, config_file,self.db_name,self.collection_name)
 
@@ -130,7 +130,6 @@ class SOMAROIManager():
 
         self.load_objects()
 
-        rospy.spin()
     def _check_soma_roi_queryservice(self):
         rospy.loginfo("SOMA ROI Manager is waiting for the SOMA query ROI service...")
         try:
