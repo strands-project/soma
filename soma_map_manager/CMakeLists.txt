@@ -8,7 +8,6 @@ find_package(catkin REQUIRED COMPONENTS
   geometry_msgs
   mongodb_store
   rospy
-  soma2_msgs
   visualization_msgs
   message_generation
   nav_msgs
@@ -71,7 +70,7 @@ catkin_python_setup()
 ## Generate added messages and services with any dependencies listed here
  generate_messages(
 #   DEPENDENCIES
-#   geometry_msgs#   soma_msgs#   visualization_msgs
+#   geometry_msgs#     visualization_msgs
  )
 
 ###################################
@@ -86,7 +85,7 @@ catkin_python_setup()
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES soma_roi_manager
-#  CATKIN_DEPENDS geometry_msgs interactive_markers mongodb_store rospy soma_msgs visualization_msgs
+#  CATKIN_DEPENDS geometry_msgs interactive_markers mongodb_store rospy  visualization_msgs
 #  DEPENDS system_lib
 )
 

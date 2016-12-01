@@ -1,0 +1,9 @@
+<launch>
+
+	<arg name="llsd_scene_store_name" default="llsd_scene_store"/>
+	<arg name="llsd_segment_store_name" default="llsd_segment_store"/>
+	<arg name="db_name" default="somadata" />
+
+	<node name="soma_llsd_services" type="server.py" pkg="soma_llsd" output="screen" respawn="true" args="--db_name $(arg db_name) --llsd_scene_store_name $(arg llsd_scene_store_name) --llsd_segment_store_name $(arg llsd_segment_store_name)"/>
+
+</launch>

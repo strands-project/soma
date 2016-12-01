@@ -1,0 +1,9 @@
+<launch>
+	
+	
+      
+<node name="soma_visualizer" pkg="soma_visualizer" type="soma_visualizer_node" output="screen"/>
+	
+<node name="soma_draw_roi" pkg="soma_roi_manager" type="soma_roi_drawer.py" output="screen"/>
+   
+</launch>

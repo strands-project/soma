@@ -19,8 +19,7 @@ from geometry_msgs.msg import PoseArray
 from nav_msgs.msg import OccupancyGrid
 from nav_msgs.srv import GetMap
 
-from soma2_msgs.msg import SOMA2ROIObject
-from soma2_msgs.msg import SOMA2OccupancyMap
+from soma_msgs.msg import SOMAOccupancyMap
 from bson.objectid import ObjectId
 
 from soma_map_manager.srv import *
@@ -31,36 +30,36 @@ class SOMAMapManager():
 
        # self.soma_map_name = soma_map_name
         self.map_unique_id = -1
-        self.soma2map = SOMA2OccupancyMap()
+        self.somamap = SOMAOccupancyMap()
 
-        self.pub = rospy.Publisher('soma2/map', OccupancyGrid, queue_size=1, latch=True)
+        self.pub = rospy.Publisher('soma/map', OccupancyGrid, queue_size=1, latch=True)
 
-        self._map_store=MessageStoreProxy(database="maps", collection="soma2")
+        self._map_store=MessageStoreProxy(database="somadata", collection="map")
 
         if(self._init_map(mapname)):
-            s = rospy.Service('soma2/map_info', MapInfo, self.handle_map_info)
+            s = rospy.Service('soma/map_info', MapInfo, self.handle_map_info)
             self.run_node()
         print "Quitting..."
 
         #rospy.spin()
     def handle_map_info(self,req):
-        return MapInfoResponse(self.soma2map.mapname,str(self.map_unique_id))
+        return MapInfoResponse(self.somamap.mapname,str(self.map_unique_id))
 
     def _init_map(self,mapname):
 
         if(mapname != None):
 
-            res = self._map_store.query(SOMA2OccupancyMap._type, message_query={"mapname":mapname})
+            res = self._map_store.query(SOMAOccupancyMap._type, message_query={"mapname":mapname})
             if res:
                 print "Map is found in DB. Publishing... "
-                self.soma2map,meta = res[0]
+                self.somamap,meta = res[0]
                 #print meta
-                self.soma2map.map.data = self.rldecode(self.soma2map.rle_values,self.soma2map.rle_counts)
+                self.somamap.map.data = self.rldecode(self.somamap.rle_values,self.somamap.rle_counts)
                 self.map_unique_id = meta['_id']
                 return True
 
         #check for the map with map name
-        res = self._map_store.query(SOMA2OccupancyMap._type, message_query={})
+        res = self._map_store.query(SOMAOccupancyMap._type, message_query={})
 
         #if map is already stored just get the unique identifier
         if res:
@@ -78,9 +77,9 @@ class SOMAMapManager():
                     if(int(var) <= len(res)):
                         if(int(var) == 0):
                             return self.listen_and_store_map()
-                        self.soma2map,meta = res[(int(var)-1)]
+                        self.somamap,meta = res[(int(var)-1)]
                               #print meta
-                        self.soma2map.map.data = self.rldecode(self.soma2map.rle_values,self.soma2map.rle_counts)
+                        self.somamap.map.data = self.rldecode(self.somamap.rle_values,self.somamap.rle_counts)
                         self.map_unique_id = meta['_id']
                         return True
             #print self.selected_map.map.data
@@ -95,7 +94,7 @@ class SOMAMapManager():
              return False
 
     def listen_and_store_map(self):
-         occmap = SOMA2OccupancyMap()
+         occmap = SOMAOccupancyMap()
          map = self._get_occupancy_map()
          if map:
             var = raw_input("Map is received. Please enter a name for storing it in the database: ")
@@ -113,7 +112,7 @@ class SOMAMapManager():
             #print len(occmap.map.data)
             occmap.map.data = []
             _id = self._map_store.insert(occmap)
-            self.soma2map = tempmap
+            self.somamap = tempmap
             self.map_unique_id = _id
             return True
          else:
@@ -122,8 +121,8 @@ class SOMAMapManager():
 
     def run_node(self):
            rate = rospy.Rate(1) # 1hz
-           print "map is now being published on soma2/map topic"
-           self.pub.publish(self.soma2map.map)
+           print "map is now being published on soma/map topic"
+           self.pub.publish(self.somamap.map)
            while not rospy.is_shutdown():
                 rate.sleep()
     def rlencode(self,src):
