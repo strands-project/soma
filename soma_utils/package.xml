@@ -1,7 +1,9 @@
 <?xml version="1.0"?>
 <package>
   <name>soma_utils</name>
+
   <version>2.0.1</version>
+
 
   <description>The soma_utils package</description>
 

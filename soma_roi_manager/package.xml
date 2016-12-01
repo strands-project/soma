@@ -2,7 +2,9 @@
 <package>
   <name>soma_roi_manager</name>
 
+
   <version>2.0.1</version>
+
 
   <description>The soma_roi_manager package</description>
 
