@@ -1,0 +1,39 @@
+int8  query_type    ### 0: perform soma roi query
+		    ### 1: return all ids and configs
+                   
+		    		    
+bool uselowertime   ### use lower time limit as a query field
+bool useuppertime   ### use upper time limit as a query field
+bool usedates	    ### use dates as a query field. If the upper or lower date is 0, it is ignored.
+bool useweekday     ### use weekday as a query field
+
+bool returnmostrecent ### this flag should be set to true if you want to get the most recent versions of the rois
+
+uint32 lowerhour     ### lower limit of the hour
+
+uint32 upperhour     ### upper limit of the hour
+
+uint32 lowerminutes  ### lower limit of minutes
+
+uint32 upperminutes  ### upper limit of minutes
+
+uint64 lowerdate     ### lower date in timestamp format
+
+uint64 upperdate     ### upper date limit in timestamp format
+
+uint8 weekday        ### iso weekday 1-Monday 7-Sunday
+
+string[] roiids      ### array of roi ids that will be queried with or statement
+
+string[] roiconfigs  ### array of roi configurations that will be queried with or statement   
+
+---
+string[] configs           ### vector of roi configs present in current collection
+
+string[] ids		   ### vector of roi ids present in current collection
+
+string[] unique_ids        ### vector of mongo unique ids of objects
+
+soma_msgs/SOMAROIObject[] rois  ### vector of returned rois
+
+string queryjson 	   ### performed query in json format

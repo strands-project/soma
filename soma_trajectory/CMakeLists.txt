@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(soma2_trajectory)
+project(soma_trajectory)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
@@ -8,6 +8,9 @@ find_package(catkin REQUIRED COMPONENTS
   human_trajectory
   rospy
   message_generation
+  geometry_msgs
+  interactive_markers
+  visualization_msgs
 )
 
 ## System dependencies are found with CMake's conventions

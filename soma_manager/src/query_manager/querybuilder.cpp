@@ -5,7 +5,7 @@ QueryBuilder::QueryBuilder()
 
 
 }
-mongo::BSONObj QueryBuilder::buildSOMA2LabelContainsQuery(const std::string &text)
+mongo::BSONObj QueryBuilder::buildSOMALabelContainsQuery(const std::string &text)
 {
 
     mongo::BSONObjBuilder builder;
@@ -22,7 +22,16 @@ mongo::BSONObj QueryBuilder::buildSOMA2LabelContainsQuery(const std::string &tex
 
 
 }
-mongo::BSONObj QueryBuilder::buildSOMA2DateQuery(unsigned long lowerdate, unsigned long upperdate, int mode)
+mongo::BSONObj QueryBuilder::buildSOMAConfigQuery(const std::string &text)
+{
+    mongo::BSONObjBuilder builder;
+
+    builder.append("config",text);
+
+    return builder.obj();
+
+}
+mongo::BSONObj QueryBuilder::buildSOMADateQuery(unsigned long lowerdate, unsigned long upperdate, int mode)
 {
     mongo::BSONObjBuilder builder;
 
@@ -62,52 +71,18 @@ mongo::BSONObj QueryBuilder::buildSOMA2DateQuery(unsigned long lowerdate, unsign
 
     }
 
-    //  qDebug()<<QString::fromStdString(builder.obj().jsonString());
 
     builder2.append("timestamp",builder.obj());
+    return builder2.obj();
 
-    // obj<<"timestamp"<<builder.ob();
 
 
     return builder2.obj();
 
 }
 
-mongo::BSONObj QueryBuilder::buildSOMA2TimestepQuery(int timestep)
-{
-    mongo::BSONObjBuilder builder;
 
-    builder.append("timestep",timestep);
-
-    return builder.obj();
-
-}
-
-/*mongo::BSONObj QueryBuilder::buildSOMA2TypeEqualsQuery(const std::vector<std::string>& typelist)
-{
-
-
-    mongo::BSONArrayBuilder arrbuilder;
-
-    for(int i = 0; i < typelist.size(); i++)
-    {
-        mongo::BSONObjBuilder builder;
-
-        builder.append("type",typelist[i].data());
-
-        arrbuilder.append(builder.obj());
-
-    }
-
-    mongo::BSONObjBuilder builder;
-
-    builder.append("$or",arrbuilder.arr());
-
-
-    return builder.obj();
-
-}*/
-mongo::BSONObj QueryBuilder::buildSOMA2StringArrayBasedQuery(const std::vector<std::string> &list, std::vector<std::string> fieldnames, std::vector<int> objectIndexes, std::string arrayOperator)
+mongo::BSONObj QueryBuilder::buildSOMAStringArrayBasedQuery(const std::vector<std::string> &list, std::vector<std::string> fieldnames, std::vector<int> objectIndexes, std::string arrayOperator)
 {
 
     std::vector<int> realIndexes;
@@ -117,7 +92,8 @@ mongo::BSONObj QueryBuilder::buildSOMA2StringArrayBasedQuery(const std::vector<s
 
     mongo::BSONArrayBuilder arrbuilder;
 
-    for(int j = 0 ;j < fieldnames.size(); j++){
+    for(int j = 0 ;j < fieldnames.size(); j++)
+    {
 
         for(int i = realIndexes[j]; i < realIndexes[j]+objectIndexes[j]; i++)
         {
@@ -138,7 +114,7 @@ mongo::BSONObj QueryBuilder::buildSOMA2StringArrayBasedQuery(const std::vector<s
 
 
 }
-mongo::BSONObj QueryBuilder::buildSOMA2TimeQuery(int lowerhour,int lowerminute, int upperhour, int upperminute,  int mode)
+mongo::BSONObj QueryBuilder::buildSOMATimeQuery(int lowerhour,int lowerminute, int upperhour, int upperminute,  int mode)
 {
     mongo::BSONObjBuilder builder;
 
@@ -206,7 +182,7 @@ mongo::BSONObj QueryBuilder::buildSOMA2TimeQuery(int lowerhour,int lowerminute, 
     return builder.obj();
 
 }
-mongo::BSONObj QueryBuilder::buildSOMA2WeekdayQuery(int index)
+mongo::BSONObj QueryBuilder::buildSOMAWeekdayQuery(int index)
 {
     // std::stringstream ss;
     //ss<<index;
@@ -220,7 +196,7 @@ mongo::BSONObj QueryBuilder::buildSOMA2WeekdayQuery(int index)
 
 }
 
-mongo::BSONObj QueryBuilder::buildSOMA2ROIWithinQuery(const soma2_msgs::SOMA2ROIObject &roiobj)
+mongo::BSONObj QueryBuilder::buildSOMAROIWithinQuery(const soma_msgs::SOMAROIObject &roiobj)
 {
 
     mongo::BSONArrayBuilder b;

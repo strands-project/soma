@@ -1,0 +1,53 @@
+int8  query_type    ### 0: perform soma object query
+		    ### 1: return all object types, ids and configs
+		    ### 2: return min-max timestamp limits of the collection
+		    
+		    
+
+bool uselowertime   ### use lower time limit as a query field
+bool useuppertime   ### use upper time limit as a query field
+bool usedates	    ### use dates as a query field. If the upper or lower date is 0, it is ignored.
+bool useweekday     ### use weekday as a query field
+bool useroi_id	    ### use roi_id as a query field. If set to true, custom_roi array will be ignored
+
+
+uint32 lowerhour     ### lower limit of the hour in the interval[0-23]
+
+uint32 upperhour     ### upper limit of the hour in the interval [0-23]
+
+uint32 lowerminutes  ### lower limit of minutes in the interval [0-59]
+
+uint32 upperminutes  ### upper limit of minutes in the interval [0-59]
+
+uint64 lowerdate     ### lower date in timestamp format
+
+uint64 upperdate     ### upper date limit in timestamp format
+
+uint8 weekday        ### iso weekday 1-Monday 7-Sunday
+
+string[] objectids   ### array of object ids that will be queried with or statement
+
+string[] objecttypes ### array of object types that will be queried with or statement   
+
+string roi_id        ### id of the roi that will be used for within query
+
+string[] configs     ### retrieve objects with specific configuration
+
+float32[] custom_roi   ### user defined custom roi with 4 vertices The element order should be -> [x_lower,x_upper,y_lower,y_upper].  
+
+
+---
+int32[]  timedatelimits    ### timedatelimits[0] -> min-date in timestamp format
+			   ### timedatelimits[1] -> max-date in timestamp format
+
+string[] types             ### vector of object types present in current collection
+
+string[] ids		   ### vector of object ids present in current collection
+
+string[] configs	   ### vector of object configs present in current collection
+
+string[] unique_ids        ### vector of mongo unique ids of objects
+
+soma_msgs/SOMAObject[] objects  ### vector of returned objects
+
+string queryjson 	   ### performed query in json format

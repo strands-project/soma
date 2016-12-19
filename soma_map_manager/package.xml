@@ -1,8 +1,10 @@
 <?xml version="1.0"?>
 <package>
   <name>soma_map_manager</name>
-  <version>2.0.0</version>
-  <description>The soma2_map_manager package</description>
+
+  <version>2.0.1</version>
+  <description>The soma_map_manager package</description>
+
 
   <maintainer email="hkarao@kth.se">Hakan Karaoguz</maintainer>
   <maintainer email="n.a.hawes@cs.bham.ac.uk">Nick Hawes</maintainer>
@@ -13,14 +15,13 @@
   <build_depend>geometry_msgs</build_depend>
   <build_depend>mongodb_store</build_depend>
   <build_depend>rospy</build_depend>
-  <build_depend>soma2_msgs</build_depend>
   <build_depend>nav_msgs</build_depend>
   <build_depend>message_generation</build_depend>
   <build_depend>visualization_msgs</build_depend>
+
   <run_depend>geometry_msgs</run_depend>
   <run_depend>mongodb_store</run_depend>
   <run_depend>rospy</run_depend>
-  <run_depend>soma2_msgs</run_depend>
   <run_depend>visualization_msgs</run_depend>
   <run_depend>nav_msgs</run_depend>
   <run_depend>message_runtime</run_depend>

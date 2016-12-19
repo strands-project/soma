@@ -1,0 +1,5 @@
+string db_id    ### Unique mongodb id
+soma_msgs/SOMAObject object
+---
+bool result
+

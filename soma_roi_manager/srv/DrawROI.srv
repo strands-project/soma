@@ -1,4 +1,8 @@
-string map_name
-string roi_id
+string map_name      # 2D map name for the rois
+string roi_id        # The id of the roi to be drawn
+string roi_config    # Optional: The configuration of the roi(s) to be drawn
+bool draw_all        # True: draw all the rois in the db. Other fields are ignored
+bool draw_mostrecent # True: draws only the most recent version of a particular roi.
+float32[] rgb        # Optional: Set the color array (default color is blue)
 ---
-bool candraw
+bool result

@@ -1,0 +1,6 @@
+string meta_data
+string scene_id
+soma_llsd_msgs/Observation[] observations       # optional, can be added later
+---
+bool result
+soma_llsd_msgs/Segment response

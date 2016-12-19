@@ -2,7 +2,9 @@
 <package>
   <name>soma_roi_manager</name>
 
-  <version>2.0.0</version>
+
+  <version>2.0.1</version>
+
 
   <description>The soma_roi_manager package</description>
 
@@ -18,21 +20,23 @@
   <build_depend>mongodb_store</build_depend>
   <build_depend>message_generation</build_depend>
   <build_depend>rospy</build_depend>
-  <build_depend>soma2_msgs</build_depend>
+  <build_depend>soma_msgs</build_depend>
   <build_depend>nav_msgs</build_depend>
   <build_depend>std_msgs</build_depend>
   <build_depend>visualization_msgs</build_depend>
   <build_depend>interactive_markers</build_depend>
-  
+  <build_depend>soma_manager</build_depend>
+
   <run_depend>geometry_msgs</run_depend>
   <run_depend>mongodb_store</run_depend>
   <run_depend>rospy</run_depend>
-  <run_depend>soma2_msgs</run_depend>
+  <run_depend>soma_msgs</run_depend>
   <run_depend>visualization_msgs</run_depend>
   <run_depend>nav_msgs</run_depend>
   <run_depend>message_runtime</run_depend>
   <run_depend>std_msgs</run_depend>
   <run_depend>interactive_markers</run_depend>
+  <run_depend>soma_manager</run_depend>
 
 
 </package>
