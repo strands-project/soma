@@ -126,10 +126,18 @@ include_directories(
 # all install targets should use catkin DESTINATION variables
 # See http://ros.org/doc/api/catkin/html/adv_user_guide/variables.html
 
-install(DIRECTORY scripts/
+install(DIRECTORY scripts/ 
         DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
         USE_SOURCE_PERMISSIONS)
 
+#install (FILES 
+# 	src/soma_roi_manager/soma_roi_drawer.py
+#        DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+#     
+#)
+
+catkin_install_python(PROGRAMS src/soma_roi_manager/soma_roi_drawer.py
+  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
 
 #############
 ## Testing ##

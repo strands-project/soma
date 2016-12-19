@@ -2,7 +2,7 @@
 <package>
   <name>soma_visualizer</name>
   <version>2.0.1</version>
-  <description>SOMA visualizer package</description>
+  <description>soma_visualizer package</description>
 
 
   <maintainer email="hkarao@kth.se">Hakan Karaoguz</maintainer>
@@ -27,7 +27,7 @@
   <build_depend>soma_roi_manager</build_depend>
   <build_depend>soma_manager</build_depend>
   <build_depend>cv_bridge</build_depend>
-  
+
   <run_depend>roscpp</run_depend>
   <run_depend>rospy</run_depend>
   <run_depend>pcl_ros</run_depend>
