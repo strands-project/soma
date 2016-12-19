@@ -8,6 +8,9 @@ find_package(catkin REQUIRED COMPONENTS
   human_trajectory
   rospy
   message_generation
+  geometry_msgs
+  interactive_markers
+  visualization_msgs
 )
 
 ## System dependencies are found with CMake's conventions
