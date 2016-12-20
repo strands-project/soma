@@ -2,6 +2,39 @@
 Changelog for package soma_manager
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Fixed merge conflicts
+* Modified package.xml files for 2.0.1 release
+* Code refactoring and simplification. Added query by object config to soma visualizer. Query message is changed to include config array instead of single config
+* Removed unnecesary cmakelists command. Changed db_name in launch file.
+* integrates soma_llsd into soma data manager
+* Removed query builder class dependency in soma_visualizer. Various bug fixes and code improvements. Added object detail view to soma_visualizer. Fixed issue 72
+* Object detail view has been added
+* Various bug fixes in visualizer. Added object list table
+* Fixed a bug in query manager that causes crash with empty object type/id array. Visualizer now uses query service instead
+* README has been updated. Query manager has been updated to fix issue69
+* Query objects with custom rois
+* Changes done to be compatible with mongodb update
+* Updated soma_roi_manager for using soma roi query services. Moved geospatial indexing of rois to mongodb. Fixed various bugs in object managersoma_roi manager
+* SOMA ROI query service has been updated to return the latest versions of the rois. SOMA ROI manager has been updated. Geospatial data is now handled in mongodb_store for ROIs. Various bug fixes
+* Increased the wait timeout for the map service
+* Additional features are added to the visualizer. You can go to the first and last step of the slider with buttons
+* Fixes to remote launch file
+* Launch files have been updated. SOMA ROI has been updated
+* Object manager is updated to use the soma query services for querying objects. SOMa query manager has been updated to return unique mongo ids of queried objects. SOMAQueryObjs service message has been updated to perform config based queries for objects
+* Various bug fixes. Started integrating soma_visualizer into whole soma package
+* SOMA Query service has been updated. ROI and Object queries are seperated. SOMAObject has been updated with an additional metafield. SOMA roi drawer has been updated. SOMANewObjects message has been added for announcing newly added objects
+* Miscalleneous updates and bugfixes
+* Robot state viewer is added to the package as soma_visualizer. QueryManager has been updated
+* Update documentation. Updated soma ROI manager for displaying latest version of ROIs.
+* Clean up code. Removal of 2s
+* 2s are removed from soma_trajectory.
+* 2s have been removed from msgs and code
+* Started removal of 2's from various places. Updated object_manager, query_manager and data_manager
+* Msg documenation has been updated. ROI manager has been updated for storing the update history of the regions along with temporal information
+* Contributors: Hakan, STRANDS, hkaraoguz
+
 2.0.0 (2016-11-25)
 ------------------
 

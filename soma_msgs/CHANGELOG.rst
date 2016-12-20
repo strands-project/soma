@@ -2,6 +2,15 @@
 Changelog for package soma2_msgs
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Fixed merge conflicts
+* Modified package.xml files for 2.0.1 release
+* SOMA Query service has been updated. ROI and Object queries are seperated. SOMAObject has been updated with an additional metafield. SOMA roi drawer has been updated. SOMANewObjects message has been added for announcing newly added objects
+* Miscalleneous updates and bugfixes
+* 2s have been removed from msgs and code
+* Contributors: Hakan
+
 2.0.0 (2016-11-25)
 ------------------
 

@@ -2,6 +2,14 @@
 Changelog for package soma2_trajectory
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Dependency fixes
+* Fixed merge conflicts
+* Modified package.xml files for 2.0.1 release
+* 2s are removed from soma_trajectory.
+* Contributors: Hakan, hkaraoguz
+
 2.0.0 (2016-11-25)
 ------------------
 

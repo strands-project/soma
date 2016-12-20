@@ -2,6 +2,29 @@
 Changelog for package soma_roi_manager
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Fixed install targets
+* Fixed merge conflicts
+* Modified package.xml files for 2.0.1 release
+* remove space on the description of config to avoid confusion
+* attempt to make have roi with multiple configs
+* The memory management problem of soma visualizer has been fixed. Draw most recent functionality has been added to the soma roi drawer. Various bug fixes in soma visualizer
+* Fixed the issue of not updating timestamp when a vertex is deleted
+* Updated soma_roi_manager for using soma roi query services. Moved geospatial indexing of rois to mongodb. Fixed various bugs in object managersoma_roi manager
+* SOMA ROI query service has been updated to return the latest versions of the rois. SOMA ROI manager has been updated. Geospatial data is now handled in mongodb_store for ROIs. Various bug fixes
+* Launch files have been updated. SOMA ROI has been updated
+* Various bug fixes. Started integrating soma_visualizer into whole soma package
+* SOMA Query service has been updated. ROI and Object queries are seperated. SOMAObject has been updated with an additional metafield. SOMA roi drawer has been updated. SOMANewObjects message has been added for announcing newly added objects
+* Miscalleneous updates and bugfixes
+* Update documentation. Updated soma ROI manager for displaying latest version of ROIs.
+* Clean up code. Removal of 2s
+* 2s have been removed from msgs and code
+* Removed world_state_importer. Refactored soma_roi code
+* Msg documenation has been updated. ROI manager has been updated for storing the update history of the regions along with temporal information
+* SOMA2ROI object and roi_manager updates
+* Contributors: Ferdian Jovan, Hakan, hkaraoguz
+
 2.0.0 (2016-11-25)
 ------------------
 

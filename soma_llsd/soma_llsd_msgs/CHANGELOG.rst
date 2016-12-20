@@ -1,20 +1,16 @@
-^^^^^^^^^^^^^^^^^^^^^^^^^^
-Changelog for package soma
-^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Changelog for package soma_llsd_msgs
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Forthcoming
 -----------
-* Dependency fixes
-* 2s have been removed from msgs and code
-* add run dependencies
-* add meta package
-* Contributors: Hakan, Lars Kunze
+* Modified package.xml files for 2.0.1 release
+* integrates soma_llsd into soma data manager
+* Contributors: Hakan, STRANDS
 
-* Dependency fixes
-* 2s have been removed from msgs and code
-* add run dependencies
-* add meta package
-* Contributors: Hakan, Lars Kunze
+* Modified package.xml files for 2.0.1 release
+* integrates soma_llsd into soma data manager
+* Contributors: Hakan, STRANDS
 
 2.0.0 (2016-11-25)
 ------------------

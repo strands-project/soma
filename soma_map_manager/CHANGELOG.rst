@@ -2,6 +2,14 @@
 Changelog for package soma_map_manager
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Fixed merge conflicts
+* Modified package.xml files for 2.0.1 release
+* 2s have been removed from msgs and code
+* Started removal of 2's from various places. Updated object_manager, query_manager and data_manager
+* Contributors: Hakan, hkaraoguz
+
 2.0.0 (2016-11-25)
 ------------------
 

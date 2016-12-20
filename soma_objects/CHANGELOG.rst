@@ -2,6 +2,20 @@
 Changelog for package soma_objects
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Fixed merge conflicts
+* Modified package.xml files for 2.0.1 release
+* Contributors: Hakan
+
+* Fixed merge conflicts
+* Modified package.xml files for 2.0.1 release
+* Contributors: Hakan
+
+* Fixed merge conflicts
+* Modified package.xml files for 2.0.1 release
+* Contributors: Hakan
+
 2.0.0 (2016-11-25)
 ------------------
 
