@@ -2,8 +2,8 @@
 Changelog for package soma_manager
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+2.1.0 (2016-12-20)
+------------------
 * Fixed merge conflicts
 * Modified package.xml files for 2.0.1 release
 * Code refactoring and simplification. Added query by object config to soma visualizer. Query message is changed to include config array instead of single config

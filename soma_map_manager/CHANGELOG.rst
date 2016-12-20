@@ -2,8 +2,8 @@
 Changelog for package soma_map_manager
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+2.1.0 (2016-12-20)
+------------------
 * Fixed merge conflicts
 * Modified package.xml files for 2.0.1 release
 * 2s have been removed from msgs and code

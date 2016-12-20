@@ -2,8 +2,8 @@
 Changelog for package soma
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+2.1.0 (2016-12-20)
+------------------
 * Dependency fixes
 * 2s have been removed from msgs and code
 * add run dependencies

@@ -2,8 +2,8 @@
 Changelog for package soma_llsd
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+2.1.0 (2016-12-20)
+------------------
 * Fixed install targets
 * Modified package.xml files for 2.0.1 release
 * integrates soma_llsd into soma data manager

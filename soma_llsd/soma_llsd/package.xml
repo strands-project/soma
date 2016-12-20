@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
   <name>soma_llsd</name>
-  <version>2.0.1</version>
+  <version>2.1.0</version>
   <description>The soma_llsd package</description>
 
   <!-- One maintainer tag required, multiple allowed, one person per tag -->

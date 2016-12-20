@@ -2,8 +2,8 @@
 Changelog for package soma_pcl_segmentation
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+2.1.0 (2016-12-20)
+------------------
 * Fixed merge conflicts
 * Modified package.xml files for 2.0.1 release
 * Contributors: Hakan
