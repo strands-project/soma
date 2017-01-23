@@ -475,6 +475,9 @@ bool handleObjectQueryRequests(soma_manager::SOMAQueryObjsRequest & req, soma_ma
 
             builder.append("id",req.roi_id);
 
+            if(req.roi_config != "")
+                builder.append("config",req.roi_config);
+
             std::vector<boost::shared_ptr<soma_msgs::SOMAROIObject> > rois;
 
             mongo::BSONObjBuilder sortquerybuilder;
@@ -744,18 +747,26 @@ bool handleObjectQueryRequests(soma_manager::SOMAQueryObjsRequest & req, soma_ma
 
             for(size_t i = 0; i < somaobjectsmetas.size(); i++)
             {
-                resp.objects.push_back(*somaobjectsmetas[i].first);
+
                 mongo::BSONObj obj = somaobjectsmetas[i].second;
+                //std::cout<<obj.jsonString();
                 mongo::BSONElement _idelement = obj.getField("_id");
 
                 std::string _id = _idelement.toString(false);
+                //soma_msgs::SOMAObject sobj = *somaobjectsmetas[i].first;
+                //ROS_INFO("%ld %d %s _id: %s length: %d",sobj.logtimestamp,i, obj.jsonString().data(), _id.data(),(_id.end()-_id.begin()));
 
                 /*** Removing the ObjectId(...) part from the unique id.
                  * Only the part within the paranthesis is important for us***/
-                _id.erase(_id.begin(),_id.begin()+10);
-                _id.erase(_id.end()-2,_id.end());
+                if((_id.end()-_id.begin()) > 10)
+                {
+                    _id.erase(_id.begin(),_id.begin()+10);
+                    _id.erase(_id.end()-2,_id.end());
+                    resp.objects.push_back(*somaobjectsmetas[i].first);
+                    resp.unique_ids.push_back(_id);
+                }
                 /**********************************************************/
-                resp.unique_ids.push_back(_id);
+
 
             }
 

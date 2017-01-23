@@ -21,6 +21,7 @@ from geometry_msgs.msg import PoseArray
 from soma_roi_manager.srv import *
 
 from soma_msgs.msg import SOMAROIObject
+from soma_manager.srv import SOMAQueryROIs
 
 
 def trapezoidal_shaped_func(a, b, c, d, x):
@@ -111,37 +112,46 @@ class SOMAROIDrawer():
         return [lng , lat]
 
     def _retrieve_objects(self, map_name, roi_id, roi_config, draw_all,draw_mostrecent):
+        query_service = rospy.ServiceProxy('soma/query_rois',SOMAQueryROIs)
+        #self._msg_store.query(SOMAROIObject._type, message_query={"map_name": self.soma_map_name, "config":self.soma_conf, "returnmostrecent":True})
+
         if draw_all:
-            objs = self._msg_store.query(SOMAROIObject._type, message_query={"map_name": map_name,
-                                                                      })
-            return objs
+            #objs = self._msg_store.query(SOMAROIObject._type, message_query={"map_name": map_name, })
+            resp = query_service(query_type=0,returnmostrecent=True)
+            return resp.rois
         if roi_config == "":
             if not draw_mostrecent:
-                objs = self._msg_store.query(SOMAROIObject._type, message_query={"map_name": map_name,
-                                                                      "id": roi_id})
+                resp = query_service(query_type=0,roiids=[roi_id],returnmostrecent=False)
+                #objs = self._msg_store.query(SOMAROIObject._type, message_query={"map_name": map_name,
+                #                                                      "id": roi_id})
             else:
-                objs = self._msg_store.query(SOMAROIObject._type, message_query={"map_name": map_name,
-                                                                      "id": roi_id},sort_query=[("logtimestamp",-1)],limit=1)
+                resp = query_service(query_type=0,roiids=[roi_id],returnmostrecent=True)
+                #objs = self._msg_store.query(SOMAROIObject._type, message_query={"map_name": map_name,
+                #                                                      "id": roi_id},sort_query=[("logtimestamp",-1)],limit=1)
 
         elif roi_id !="" and roi_config != "":
             if not draw_mostrecent:
-                objs = self._msg_store.query(SOMAROIObject._type, message_query={"map_name": map_name,
-                                                                      "id": roi_id, "config":roi_config})
+                resp = query_service(query_type=0,roiids=[roi_id],roiconfigs=[roi_config],returnmostrecent=False)
+                #objs = self._msg_store.query(SOMAROIObject._type, message_query={"map_name": map_name,
+                #                                                      "id": roi_id, "config":roi_config})
             else:
-                objs = self._msg_store.query(SOMAROIObject._type, message_query={"map_name": map_name,
-                                                                      "id": roi_id, "config":roi_config},sort_query=[("logtimestamp",-1)],limit=1)
+                resp = query_service(query_type=0,roiids=[roi_id],roiconfigs=[roi_config],returnmostrecent=True)
+                #objs = self._msg_store.query(SOMAROIObject._type, message_query={"map_name": map_name,
+                #                                                      "id": roi_id, "config":roi_config},sort_query=[("logtimestamp",-1)],limit=1)
 
         else:
             if not draw_mostrecent:
-                objs = self._msg_store.query(SOMAROIObject._type, message_query={"map_name": map_name,
-                                                                      "config":roi_config})
+                #objs = self._msg_store.query(SOMAROIObject._type, message_query={"map_name": map_name,
+                #                                                      "config":roi_config})
+                resp = query_service(query_type=0,roiconfigs=[roi_config],returnmostrecent=False)
             else:
-                objs = self._msg_store.query(SOMAROIObject._type, message_query={"map_name": map_name,
-                                                                      "config":roi_config},sort_query=[("logtimestamp",-1)],limit=1)
+                resp = query_service(query_type=0,roiconfigs=[roi_config],returnmostrecent=True)
+                #objs = self._msg_store.query(SOMAROIObject._type, message_query={"map_name": map_name,
+                #                                                      "config":roi_config},sort_query=[("logtimestamp",-1)],limit=1)
 
 
 
-        return objs
+        return resp.rois
 
     def load_objects(self, map_name, roi_id, roi_config, draw_all,draw_mostrecent):
 
@@ -160,7 +170,7 @@ class SOMAROIDrawer():
             return False
         count = 1
         # otherwise, load all object from collection
-        for o,om  in objs:
+        for o in objs:
             for pose in o.posearray.poses:
                 self.load_object(o.id, o.type, pose,count,markerarray)
                 count +=1

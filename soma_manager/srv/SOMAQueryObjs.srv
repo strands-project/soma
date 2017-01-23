@@ -31,6 +31,8 @@ string[] objecttypes ### array of object types that will be queried with or stat
 
 string roi_id        ### id of the roi that will be used for within query
 
+string roi_config    ### config of the roi that will be used for within query
+
 string[] configs     ### retrieve objects with specific configuration
 
 float32[] custom_roi   ### user defined custom roi with 4 vertices The element order should be -> [x_lower,x_upper,y_lower,y_upper].  

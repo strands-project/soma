@@ -546,6 +546,7 @@ class SOMAROIManager():
             try:
                 if(len(res) == 1):
                     val =  int(rospy.get_rostime().to_sec()) & 0xffffffff-res[0][0].logtimestamp
+                    rospy.loginfo("Time difference %d",val)
                     if(val <= 90):
                         self._msg_store.update_id(_id, soma_obj)
                         return

@@ -65,6 +65,7 @@ add_service_files(
   SOMAUpdateObject.srv
   SOMAQueryObjs.srv
   SOMAQueryROIs.srv
+  SOMAInsertROIs.srv
 #   Service2.srv
 )
 

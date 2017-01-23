@@ -26,11 +26,12 @@ from soma_manager.msg import *
 # SOMA Data Manager For storing and deleting data
 class SOMADataManager():
 
-    def __init__(self, db_name="somadata", collection_name="object"):
+    def __init__(self, db_name="somadata", collection_name="object", roi_collection_name = "roi"):
 
        # self.soma_map_name = soma_map_name
         self._db_name = db_name
         self._collection_name = collection_name
+        self._roi_collection_name = roi_collection_name
 
         # Get the map information from soma map_manager
         resp = self._init_map()
@@ -45,6 +46,9 @@ class SOMADataManager():
         # Initialize the mongodb proxy
         self._message_store = MessageStoreProxy(database=db_name, collection=collection_name)
 
+        # Initialize the mongodb proxy
+        self._roi_message_store = MessageStoreProxy(database=db_name, collection=roi_collection_name)
+
         # Object insertion service
         inss = rospy.Service('soma/insert_objects', SOMAInsertObjs, self.handle_insert_request)
 
@@ -53,6 +57,9 @@ class SOMADataManager():
 
         #Object update service
         upts = rospy.Service('soma/update_object',SOMAUpdateObject,self.handle_update_request)
+
+        #ROI insert service
+        insrois = rospy.Service('soma/insert_rois',SOMAInsertROIs,self.handle_roi_insert_request)
 
         self.new_objects_pub = rospy.Publisher('soma/new_objects_inserted',SOMANewObjects,queue_size=5)
 
@@ -74,6 +81,43 @@ class SOMADataManager():
         except rospy.ServiceException, e:
            rospy.logerr("Service call failed: %s"%e)
            return None
+
+
+    # Handles the soma objects to be inserted
+    def handle_roi_insert_request(self,req):
+        _ids = []
+
+        for obj in req.objects:
+
+          if(obj.logtimestamp == 0):
+            obj.logtimestamp = rospy.Time.now().secs
+
+          d = datetime.datetime.utcfromtimestamp(obj.logtimestamp)
+          obj.loghour = d.hour
+          obj.logminute = d.minute
+          obj.logday = d.isoweekday()
+          obj.logtimeminutes = obj.loghour*60 + obj.logminute
+
+
+          if (obj.header.frame_id == ""):
+              obj.header.frame_id = "/map"
+
+          obj.map_name = self.map_name
+          obj.map_unique_id = self.map_unique_id
+
+          # SOMA ROI Objects are represented as  2D Polygons
+          obj.geotype = "Polygon"
+
+          try:
+                _id = self._roi_message_store.insert(obj)
+
+                _ids.append(str(_id))
+
+          except:
+                return SOMAInsertROIsResponse(False,_ids)
+
+
+        return SOMAInsertROIsResponse(True,_ids)
 
     # Handles the soma objects to be inserted
     def handle_insert_request(self,req):
