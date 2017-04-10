@@ -50,6 +50,7 @@ add_message_files(
    FILES
    SOMAObject.msg
    SOMAROIObject.msg
+   SOMATrajectory.msg
    SOMAOccupancyMap.msg
 )
 
