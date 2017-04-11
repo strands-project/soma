@@ -129,7 +129,7 @@ class SOMATrajectoryManager(object):
         soma_trajectory.id = trajectory.uuid
         soma_trajectory.map_name = self.soma_map_name
         soma_trajectory.map_unique_id = self.map_unique_id
-        self.insert_soma_time_fields(soma_trajectory)
+        self.insert_soma_time_fields(soma_trajectory, trajectory.start_time.secs)
         soma_trajectory.posearray.header = soma_trajectory.header
         soma_trajectory.posearray.poses = [
             i.pose for i in trajectory.trajectory
