@@ -1,0 +1,5 @@
+time start_time
+time end_time
+bool visualize
+---
+soma_msgs/SOMATrajectory[] trajectories
