@@ -85,6 +85,7 @@ class SOMATrajectoryManager(object):
             if len(self._trajectories):
                 soma_trajectories = list()
                 trajectories = copy.deepcopy(self._trajectories)
+                _ids = [traj.uuid for traj in trajectories]
                 for trajectory in trajectories:
                     traj = self.add_trajectory(trajectory)
                     soma_trajectories.append(traj)
@@ -92,7 +93,7 @@ class SOMATrajectoryManager(object):
                 rospy.loginfo("%d trajectories are converted..." % len(trajectories))
                 self._lock.acquire()
                 self._trajectories = [
-                    i for i in self._trajectories if i not in trajectories
+                    i for i in self._trajectories if i.uuid not in _ids
                 ]
                 self._lock.release()
             rospy.sleep(1)
