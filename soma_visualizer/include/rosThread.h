@@ -57,10 +57,10 @@ public:
      std::string getMapName();
 
      // Service call for drawing roi with id
-     void drawROIwithID(std::string id);
+     void drawROIwithID(std::string id, std::string config);
 
      // Get the SOMA ROI with id
-     soma_msgs::SOMAROIObject getSOMAROIwithID(int id);
+     soma_msgs::SOMAROIObject getSOMAROIwithIDConfig(int id, std::string config);
 
 
      // Query the SOMA objects

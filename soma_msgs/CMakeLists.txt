@@ -85,7 +85,7 @@ generate_messages(
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES soma_msgs
-#  CATKIN_DEPENDS geometry_msgs message_generation std_msgs
+  CATKIN_DEPENDS geometry_msgs message_generation std_msgs nav_msgs sensor_msgs
 #  DEPENDS system_lib
 )
 

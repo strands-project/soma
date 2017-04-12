@@ -245,8 +245,12 @@ void MainWindow::handleMapInfoReceived()
     ui->timestepSlider->setEnabled(true);
     ui->sliderCBox->setChecked(true);
 
+    for(int i = 0; i < ui->weekdaysComboBox->count(); i++)
+    {
+        ui->weekdaysComboBox->removeItem(i);
+    }
 
-
+    ui->weekdaysComboBox->clear();
 
     /********************** Prepare the Weekdays ComboBox ****************************/
     QStringList weekdays;
@@ -263,7 +267,7 @@ void MainWindow::handleMapInfoReceived()
     /************************************************************************************/
 
     // Clear any remaining ROI's in the RVIZ
-    rosthread.drawROIwithID("-1");
+    rosthread.drawROIwithID("-1","");
 
     ui->timestepSlider->setValue(1);
     emit ui->timestepSlider->valueChanged(1);
@@ -382,6 +386,14 @@ void MainWindow::handleSOMAROINames(std::vector<SOMAROINameIDConfig> roinameidco
 
     this->roinameidconfigs = roinameidconfigs;
 
+    for(int i =0; i < ui->roiComboBox->count(); i++)
+    {
+        ui->roiComboBox->removeItem(i);
+    }
+
+    ui->roiComboBox->clear();
+
+
     ui->roiComboBox->addItem("");
 
     for(int i = 0; i < roinameidconfigs.size();i++)
@@ -405,12 +417,12 @@ void MainWindow::on_roiComboBox_currentIndexChanged(const QString &arg1)
     QString str = arg1;
     QStringList numpart = str.split(" ");
 
-    if(numpart.size()>=2){
+    if(numpart.size() >= 2){
         // qDebug()<<numpart[1];
-        rosthread.drawROIwithID(numpart[1].toStdString());
+        rosthread.drawROIwithID(numpart[numpart.size()-2].toStdString(), numpart[numpart.size()-1].toStdString());
     }
     else
-        rosthread.drawROIwithID("-1");
+        rosthread.drawROIwithID("-1","");
 }
 
 void MainWindow::on_queryButton_clicked()
@@ -629,10 +641,11 @@ void MainWindow::on_queryButton_clicked()
 
         QString roiindex = QString::fromStdString(this->roinameidconfigs[roiintindex-1].id);
 
-        soma_msgs::SOMAROIObject obj =  rosthread.getSOMAROIwithID(roiindex.toInt());
+        soma_msgs::SOMAROIObject obj =  rosthread.getSOMAROIwithIDConfig(roiindex.toInt(),this->roinameidconfigs[roiintindex-1].config);
 
 
         queryObjects.request.roi_id = obj.id;
+        queryObjects.request.roi_config = obj.config;
         queryObjects.request.useroi_id = true;
 
 

@@ -18,6 +18,7 @@
 #include <QTableView>
 #include <QHeaderView>
 #include <QLabel>
+#include <QComboBox>
 #include "rosThread.h"
 #include "somaobjectdetaildialog.h"
 

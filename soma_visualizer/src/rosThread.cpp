@@ -150,14 +150,15 @@ void RosThread::fetchDataFromDB()
 
 
 }
-void RosThread::drawROIwithID(std::string id)
+void RosThread::drawROIwithID(std::string id, std::string config)
 {
 
     soma_roi_manager::DrawROI drawroi;
 
-    drawroi.request.map_name = this->map_name;
+
     drawroi.request.roi_id = id;
     drawroi.request.draw_mostrecent = true;
+    drawroi.request.roi_configs.push_back(config);
 
     this->roi_draw_client.call(drawroi);
 
@@ -387,6 +388,8 @@ void RosThread::fetchSOMAObjectTypesIDsConfigs()
 void RosThread::fetchSOMAROIs()
 {
 
+    this->roinameidconfigs.clear();
+    this->roiarray.clear();
 
     soma_manager::SOMAQueryROIs query_rois;
 
@@ -419,13 +422,13 @@ void RosThread::fetchSOMAROIs()
 
 
 }
-soma_msgs::SOMAROIObject RosThread::getSOMAROIwithID(int id)
+soma_msgs::SOMAROIObject RosThread::getSOMAROIwithIDConfig(int id, std::string config)
 {
     soma_msgs::SOMAROIObject obj;
 
     for(auto roi:this->roiarray)
     {
-        if(id ==  QString::fromStdString(roi.id.data()).toInt())
+        if(id ==  QString::fromStdString(roi.id.data()).toInt() && config == roi.config)
         {
             //qDebug()<<"ROI found";
             return roi;

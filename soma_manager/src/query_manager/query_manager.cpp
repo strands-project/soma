@@ -886,7 +886,7 @@ bool handleROIQueryRequests(soma_manager::SOMAQueryROIsRequest & req, soma_manag
 
                     objectIndexes.push_back(req.roiconfigs.size());
 
-                    mongo::BSONObj bsonobj = QueryBuilder::buildSOMAStringArrayBasedQuery(list,fieldnames,objectIndexes,"$or");
+                    mongo::BSONObj bsonobj = QueryBuilder::buildSOMAStringArrayBasedQuery(list,fieldnames,objectIndexes,"$and");
 
                     mainbuilder.appendElements(bsonobj);
                 }
