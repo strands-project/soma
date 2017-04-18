@@ -1,18 +1,48 @@
 #!/usr/bin/env python
 
-import math
-import copy
-import rospy
-import argparse
-from threading import Lock
-from datetime import datetime
 from geometry_msgs.msg import PoseArray
 from soma_map_manager.srv import MapInfo
 from soma_msgs.msg import SOMATrajectory
+from soma_manager.srv import SOMAQueryROIs
 from human_trajectory.msg import Trajectories
 from mongodb_store.message_store import MessageStoreProxy
 from soma_trajectory.visualisation import TrajectoryVisualisation
 from soma_trajectory.srv import SOMAQueryTrajectories, SOMAQueryTrajectoriesResponse
+
+import math
+import copy
+import rospy
+import pymongo
+import argparse
+import itertools
+import numpy as np
+from threading import Lock
+from datetime import datetime
+from shapely.geometry import Polygon, LineString
+
+
+def create_line_string(points):
+    return LineString(points)
+
+
+def create_polygon(posearray):
+    xs = [i.position.x for i in posearray.poses]
+    ys = [i.position.y for i in posearray.poses]
+    if Polygon(np.array(zip(xs, ys))).area == 0.0:
+        xs = [
+            [xs[0]] + list(i) for i in itertools.permutations(xs[1:])
+        ]
+        ys = [
+            [ys[0]] + list(i) for i in itertools.permutations(ys[1:])
+        ]
+        areas = list()
+        for ind in range(len(xs)):
+            areas.append(Polygon(np.array(zip(xs[ind], ys[ind]))))
+        return Polygon(
+            np.array(zip(xs[areas.index(max(areas))], ys[areas.index(max(areas))]))
+        )
+    else:
+        return Polygon(np.array(zip(xs, ys)))
 
 
 def coords_to_lnglat(x, y):
@@ -46,6 +76,7 @@ class SOMATrajectoryManager(object):
         str_msg = "Map name: ", self.soma_map_name, " Unique ID: ", self.map_unique_id
         rospy.loginfo(str_msg)
         # service
+        self.roi_query_srv = self._get_soma_roi_queryservice()
         rospy.loginfo("Initiating soma/query_trajectories service...")
         rospy.Service(
             'soma/query_trajectories', SOMAQueryTrajectories, self._srv_cb
@@ -53,24 +84,105 @@ class SOMATrajectoryManager(object):
         rospy.sleep(1)
         rospy.loginfo("Service is ready...")
 
-    def _srv_cb(self, srv):
-        rospy.loginfo(
-            "Got a request to display trajectories (limited to 10000) within %d and %d..."
-            % (srv.start_time.secs, srv.end_time.secs)
-        )
+    def _get_soma_roi_queryservice(self):
+        rospy.loginfo("Waiting for the SOMA query ROI service...")
+        try:
+            rospy.wait_for_service('soma/query_rois', timeout=30)
+            return rospy.ServiceProxy('soma/query_rois', SOMAQueryROIs)
+        except rospy.ROSException, e:
+            rospy.logwarn("Service call failed: %s" % e)
+            rospy.logwarn("Specific region queries will be ignored...")
+            return None
+
+    def _create_index(self):
+        # create index for the collection
+        db = pymongo.MongoClient(
+            rospy.get_param("mongodb_host", "localhost"),
+            rospy.get_param("mongodb_port", 62345)
+        ).get_database(self.db_name)
+        if self.collection_name in db.collection_names():
+            collection = db.get_collection(self.collection_name)
+            total = collection.count()
+            if total == 1 or total % 10 == 0:
+                collection.create_index([("logtimestamp", pymongo.ASCENDING)])
+
+    def _get_temporal_query(self, srv):
         query = {
             "map_name": self.soma_map_name,
-            "map_unique_id": self.map_unique_id
+            "map_unique_id": self.map_unique_id,
         }
-        if srv.start_time.secs != 0:
-            query.update({"start_time.secs": {"$gte": srv.start_time.secs}})
-        if srv.end_time.secs != 0:
-            query.update({"end_time.secs": {"$lt": srv.end_time.secs}})
+        if not srv.useweekday and not srv.usehourtime:
+            logtimestamp_query = {"$gte": 0, "$lt": rospy.Time.now().secs}
+            if srv.start_time.secs != 0:
+                logtimestamp_query["$gte"] = srv.start_time.secs
+            if srv.end_time.secs != 0:
+                logtimestamp_query["$lt"] = srv.end_time.secs
+            query.update({"logtimestamp": logtimestamp_query})
+            rospy.loginfo(
+                "Got a request to query trajectories (limited to 10000) within %d and %d..."
+                % (logtimestamp_query["$gte"], logtimestamp_query["$lt"])
+            )
+        else:
+            msg = "Got a request to query trajectories "
+            if srv.useweekday:
+                weekdays = [i for i in range(7) if srv.weekdays[i]]
+                query.update({"logday": {"$in": weekdays}})
+                msg += "for weekday %s " % str(weekdays)
+            if srv.usehourtime:
+                loghour_query = {"$gte": 0, "$lt": 24}
+                if srv.lowerhour != 0:
+                    loghour_query["$gte"] = srv.lowerhour
+                if srv.upperhour != 0:
+                    loghour_query["$lt"] = srv.upperhour
+                query.update({"loghour": loghour_query})
+                msg += "within hour %d and %d..." % (
+                    loghour_query["$gte"], loghour_query["$lt"]
+                )
+            rospy.loginfo(msg)
+        return query
+
+    def _get_spatial_query(self, srv):
+        region = None
+        if self.roi_query_srv is not None and srv.region_config != "" and srv.region_id != "":
+            spatial_query = dict()
+            response = self.roi_query_srv(
+                query_type=0, roiconfigs=[srv.region_config],
+                roiids=[srv.region_id], returnmostrecent=True
+            )
+            for reg in response.rois:
+                if reg.id == srv.region_id and reg.config == srv.region_config:
+                    region = reg
+            if region is not None:
+                region = create_polygon(region.posearray)
+            else:
+                rospy.logwarn("Specified region does not exist, ignore...")
+        return region
+
+    def _srv_cb(self, srv):
+        # spatial query specification
+        region = self._get_spatial_query(srv)
+        # temporal query specification
+        query =  self._get_temporal_query(srv)
         logs = self._msg_store.query(
-            SOMATrajectory._type, message_query=query, limit=10000
+            SOMATrajectory._type, message_query=query, limit=10000,
+            sort_query=[("logtimestamp", 1)]
         )
-        trajectories = [log[0] for log in logs]
+        # product of temporal and spatial query
+        trajectories = list()
+        for log in logs:
+            if region is not None:
+                line_string = create_line_string(
+                    [
+                        (
+                            i.position.x, i.position.y
+                        ) for h, i in enumerate(log[0].posearray.poses) if h % 3 == 0
+                    ]
+                )
+                if not region.intersects(line_string):
+                    continue
+            trajectories.append(log[0])
         if srv.visualize:
+            self._visualisation.delete_trajectories()
             rospy.loginfo("Visualising %d trajectories..." % len(trajectories))
             self._visualisation.visualize_trajectories(trajectories)
         return SOMAQueryTrajectoriesResponse(trajectories)
@@ -141,6 +253,7 @@ class SOMATrajectoryManager(object):
         soma_trajectory.start_time = trajectory.start_time
         soma_trajectory.end_time = trajectory.end_time
         _id = self._msg_store.insert(soma_trajectory)
+        self._create_index()
         self._soma_traj_ids[soma_trajectory.id] = _id
         return soma_trajectory
 

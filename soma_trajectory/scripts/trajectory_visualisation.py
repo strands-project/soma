@@ -20,7 +20,12 @@ if __name__ == "__main__":
     srv = rospy.ServiceProxy("soma/query_trajectories", SOMAQueryTrajectories)
     srv.wait_for_service()
     rospy.loginfo("Requesting visualisation for all trajectories...")
-    res = srv(SOMAQueryTrajectoriesRequest(visualize=True))
+    res = srv(
+        SOMAQueryTrajectoriesRequest(
+            visualize=True
+            # , region_id="1", region_config="g4s_novelty"
+        )
+    )
     trajectories = res.trajectories
 
     average_length = 0.0

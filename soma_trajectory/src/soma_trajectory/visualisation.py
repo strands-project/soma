@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import rospy
+from threading import Lock
 from std_msgs.msg import ColorRGBA
 from geometry_msgs.msg import Point
 import interactive_markers.interactive_marker_server as ims
@@ -11,6 +12,7 @@ from interactive_markers.interactive_marker_server import InteractiveMarker
 class TrajectoryVisualisation(object):
 
     def __init__(self, marker_name):
+        self._lock = Lock()
         self._modulo = 3
         self._visualised_ids = list()
         self._server = ims.InteractiveMarkerServer(marker_name)
@@ -19,6 +21,7 @@ class TrajectoryVisualisation(object):
     def _remove_trajectories(self, event):
         now = rospy.Time.now()
         remove_ids = list()
+        self._lock.acquire()
         for idx in range(len(self._visualised_ids)):
             if now - self._visualised_ids[idx][1] > rospy.Duration(60):
                 self._server.erase(self._visualised_ids[idx][0])
@@ -28,6 +31,16 @@ class TrajectoryVisualisation(object):
         self._visualised_ids = [
             i for i in self._visualised_ids if i[0] not in remove_ids
         ]
+        self._lock.release()
+
+    def delete_trajectories(self):
+        self._lock.acquire()
+        for idx in range(len(self._visualised_ids)):
+            self._server.erase(self._visualised_ids[idx][0])
+            self._server.applyChanges()
+        # rospy.loginfo("Removing %d trajectories from visualisation..." % len(remove_ids))
+        self._visualised_ids = list()
+        self._lock.release()
 
     def visualize_trajectories(self, trajectories):
         for trajectory in trajectories:
