@@ -1,5 +1,20 @@
-time start_time
-time end_time
-bool visualize
+# Temporal query options
+bool useweekday                             ## use weekday as a query field, the use of start_time and end_time is ignored by this
+bool usehourtime                            ## use hour bound as a query field, the use of start_time and end_time is ignored by this
+
+# Temporal query
+time start_time                             ## lower bound time threshold to query trajectories
+time end_time                               ## upper bound time threshold to query trajectories 
+uint32[] weekdays                           ## to query trajectories within the specified weekday (Monday=0, ..., Sunday=6)
+uint32 lowerhour                            ## lower limit of the hour as a query
+uint32 upperhour                            ## upper limit of the hour as a query
+
+# Spatial query
+string region_id                            ## to query trajectories within the specified region id
+string region_config                        ## soma roi configuration for the specified region 
+
+# Visualisation option
+bool visualize                              ## option to visualise trajectories in RVIZ
+
 ---
-soma_msgs/SOMATrajectory[] trajectories
+soma_msgs/SOMATrajectory[] trajectories     ## queried trajectories
