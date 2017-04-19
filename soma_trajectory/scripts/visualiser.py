@@ -257,6 +257,7 @@ class TrajectoryQueryVisualiser(object):
         except rospy.service.ServiceException:
             rospy.logerr("Pymongo on mongodb_store is having timeout...")
             rospy.logerr("The query is iqnored...")
+            self.message.set("Pymongo on mongodb_store is having timeout, your query is ignored.")
             return
         self.trajectory_analysis(
             region, config, res.trajectories, low_bound_timestamp,
